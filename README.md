@@ -1,6 +1,6 @@
 # Bytes
 
-Utilities for dealing with Uint8Array
+Utilities to deal with Uint8Array
 
 ```bash
 npm i @hazae41/bytes
