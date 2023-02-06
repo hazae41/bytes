@@ -15,6 +15,10 @@ export namespace Bytes {
     return fromView(Buffer.concat(list))
   }
 
+  export function equals(a: Uint8Array, b: Uint8Array) {
+    Buffers.fromView(a).equals(Buffers.fromView(b))
+  }
+
   export function alloc(length: number) {
     return new Uint8Array(length)
   }
