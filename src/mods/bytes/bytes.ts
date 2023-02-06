@@ -16,7 +16,7 @@ export namespace Bytes {
   }
 
   export function equals(a: Uint8Array, b: Uint8Array) {
-    Buffers.fromView(a).equals(Buffers.fromView(b))
+    return Buffers.fromView(a).equals(Buffers.fromView(b))
   }
 
   export function alloc(length: number) {
