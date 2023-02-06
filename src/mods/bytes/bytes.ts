@@ -5,6 +5,20 @@ const decoder = new TextDecoder()
 
 export namespace Bytes {
 
+  export function random(length: number) {
+    const bytes = allocUnsafe(length)
+    crypto.getRandomValues(bytes)
+    return bytes
+  }
+
+  export function concat(list: Uint8Array[]) {
+    return fromView(Buffer.concat(list))
+  }
+
+  export function alloc(length: number) {
+    return new Uint8Array(length)
+  }
+
   export function allocUnsafe(length: number) {
     return fromView(Buffer.allocUnsafe(length))
   }
@@ -57,13 +71,4 @@ export namespace Bytes {
     return BigInt(`0x${toHex(bytes)}`)
   }
 
-  export function random(length: number) {
-    const buffer = Buffer.allocUnsafe(length)
-    crypto.getRandomValues(buffer)
-    return fromView(buffer)
-  }
-
-  export function concat(list: Uint8Array[]) {
-    return fromView(Buffer.concat(list))
-  }
 }
