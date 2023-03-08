@@ -78,8 +78,10 @@ export namespace Bytes {
   export function padStart(bytes: Uint8Array, length: number) {
     if (bytes.length >= length)
       return bytes
+
     const result = new Uint8Array(length)
     result.set(bytes, length - bytes.length)
+
     return result
   }
 
