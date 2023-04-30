@@ -63,7 +63,7 @@ else
 #### Runtime casting with Result pattern
 
 ```tsx
-const bytes16 = Bytes.castFromView(bytesX, 16).unwrap() // Bytes<16>
+const bytes16 = Bytes.cast(bytesX, 16).unwrap() // Bytes<16>
 ```
 
 #### Conversion from sized arrays
