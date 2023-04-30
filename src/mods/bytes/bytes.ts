@@ -10,15 +10,6 @@ export type Bytes<N extends number = number> = Uint8Array & { length: N }
 export namespace Bytes {
 
   /**
-   * Create bytes from sized of length N
-   * @param array 
-   * @returns 
-   */
-  export function from<N extends number>(array: Sized<number, N>) {
-    return new Uint8Array(array) as Bytes<N>
-  }
-
-  /**
    * Alloc 0-lengthed Bytes using standard constructor
    * @returns 
    */
@@ -42,6 +33,15 @@ export namespace Bytes {
    */
   export function allocUnsafe<N extends number>(length: N) {
     return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
+  }
+
+  /**
+   * Create bytes from sized of length N
+   * @param array 
+   * @returns 
+   */
+  export function from<N extends number>(array: Sized<number, N>) {
+    return new Uint8Array(array) as Bytes<N>
   }
 
   /**
