@@ -19,6 +19,14 @@ export namespace Bytes {
   }
 
   /**
+   * Alloc 0-lengthed Bytes using standard constructor
+   * @returns 
+   */
+  export function empty() {
+    return alloc(0)
+  }
+
+  /**
    * Alloc Bytes with typed length using standard constructor
    * @param length 
    * @returns 
