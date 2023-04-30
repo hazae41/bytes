@@ -37,11 +37,11 @@ export namespace Bytes {
 
   /**
    * Create bytes from sized of length N
-   * @param array 
+   * @param sized 
    * @returns 
    */
-  export function from<N extends number>(array: Sized<number, N>) {
-    return new Uint8Array(array) as Bytes<N>
+  export function from<N extends number>(sized: Sized<number, N>) {
+    return new Uint8Array(sized) as Bytes<N>
   }
 
   /**
