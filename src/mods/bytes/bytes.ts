@@ -105,7 +105,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function castFromView<N extends number>(view: ArrayBufferView, length: N): Result<Bytes<N>> {
+  export function castFromView<N extends number>(view: ArrayBufferView, length: N) {
     return cast(fromView(view), length)
   }
 
