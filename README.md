@@ -10,8 +10,9 @@ npm i @hazae41/bytes
 
 ## Features
 - 100% TypeScript and ESM
-- Strongly typed Uint8Array size
-- Zero-cost abstraction over Uint8Array
+- Rust-like patterns
+- Strongly typed Uint8Array and ArrayLike size
+- Zero-cost abstraction over Uint8Array and ArrayLike
 - Zero-copy conversion from ArrayBufferView
 - Use native Buffer for faster execution on Node
 - Unit-tested
