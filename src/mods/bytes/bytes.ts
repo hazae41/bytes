@@ -13,7 +13,7 @@ export namespace Bytes {
    * Alloc 0-lengthed Bytes using standard constructor
    * @returns `Bytes[]`
    */
-  export function empty() {
+  export function empty(): Bytes<0> {
     return alloc(0)
   }
 
@@ -22,7 +22,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[0;N]`
    */
-  export function alloc<N extends number>(length: N) {
+  export function alloc<N extends number>(length: N): Bytes<N> {
     return new Uint8Array(length) as Bytes<N>
   }
 
@@ -31,7 +31,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[number;N]`
    */
-  export function allocUnsafe<N extends number>(length: N) {
+  export function allocUnsafe<N extends number>(length: N): Bytes<N> {
     return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
   }
 
@@ -40,7 +40,7 @@ export namespace Bytes {
    * @param sized 
    * @returns `Bytes[number;N]`
    */
-  export function from<N extends number>(sized: Sized<number, N>) {
+  export function from<N extends number>(sized: Sized<number, N>): Bytes<N> {
     return new Uint8Array(sized) as Bytes<N>
   }
 
@@ -49,7 +49,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[number;N]`
    */
-  export function random<N extends number>(length: N) {
+  export function random<N extends number>(length: N): Bytes<N> {
     const bytes = allocUnsafe(length)
     crypto.getRandomValues(bytes)
     return bytes
@@ -63,6 +63,26 @@ export namespace Bytes {
    */
   export function is<N extends number>(bytes: Bytes, length: N): bytes is Bytes<N> {
     return bytes.length.valueOf() === length.valueOf()
+  }
+
+  /**
+   * Equality check using Buffer.equals
+   * @param a 
+   * @param b 
+   * @returns 
+   */
+  export function equals<N extends number, M extends N>(a: Bytes<N>, b: Bytes<M>): a is Bytes<M> {
+    return Buffers.fromView(a).equals(Buffers.fromView(b))
+  }
+
+  /**
+   * Equality check using Buffer.equals
+   * @param a 
+   * @param b 
+   * @returns 
+   */
+  export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
+    return Buffers.fromView(a).equals(Buffers.fromView(b))
   }
 
   export class CastError<N extends number> extends Error {
@@ -87,41 +107,12 @@ export namespace Bytes {
   }
 
   /**
-   * Equality check using Buffer.equals
-   * @param a 
-   * @param b 
-   * @returns 
-   */
-  export function equals<N extends number, M extends N>(a: Bytes<N>, b: Bytes<M>): a is Bytes<M> {
-    return Buffers.fromView(a).equals(Buffers.fromView(b))
-  }
-
-  /**
-   * Equality check using Buffer.equals
-   * @param a 
-   * @param b 
-   * @returns 
-   */
-  export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
-    return Buffers.fromView(a).equals(Buffers.fromView(b))
-  }
-
-  /**
-   * Concatenation using Buffer.concat
-   * @param list 
-   * @returns 
-   */
-  export function concat(list: Bytes[]) {
-    return fromView(Buffer.concat(list))
-  }
-
-  /**
    * Cast view of N length into Bytes<N>
    * @param view 
    * @param length 
    * @returns 
    */
-  export function castFromView<N extends number>(view: ArrayBufferView, length: N) {
+  export function tryCastFromView<N extends number>(view: ArrayBufferView, length: N): Result<Bytes<N>, CastError<N>> {
     return tryCast(fromView(view), length)
   }
 
@@ -139,7 +130,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function fromUtf8(text: string) {
+  export function fromUtf8(text: string): Bytes {
     return encoder.encode(text)
   }
 
@@ -148,7 +139,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function toUtf8(bytes: Bytes) {
+  export function toUtf8(bytes: Bytes): string {
     return decoder.decode(bytes)
   }
 
@@ -157,7 +148,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function fromHexSafe(text: string) {
+  export function fromHexSafe(text: string): Bytes {
     return fromHex((text.length % 2) ? `0${text}` : text)
   }
 
@@ -166,7 +157,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function fromHex(text: string) {
+  export function fromHex(text: string): Bytes {
     return fromView(Buffer.from(text, "hex"))
   }
 
@@ -175,7 +166,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toHex(bytes: Bytes) {
+  export function toHex(bytes: Bytes): string {
     return Buffers.fromView(bytes).toString("hex")
   }
 
@@ -184,7 +175,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function fromBase64(text: string) {
+  export function fromBase64(text: string): Bytes {
     return fromView(Buffer.from(text, "base64"))
   }
 
@@ -193,7 +184,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toBase64(bytes: Bytes) {
+  export function toBase64(bytes: Bytes): string {
     return Buffers.fromView(bytes).toString("base64")
   }
 
@@ -202,7 +193,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function fromAscii(text: string) {
+  export function fromAscii(text: string): Bytes {
     return fromView(Buffer.from(text, "ascii"))
   }
 
@@ -211,7 +202,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toAscii(bytes: Bytes) {
+  export function toAscii(bytes: Bytes): string {
     return Buffers.fromView(bytes).toString("ascii")
   }
 
@@ -220,7 +211,7 @@ export namespace Bytes {
    * @param bigint 
    * @returns 
    */
-  export function fromBigInt(bigint: bigint) {
+  export function fromBigInt(bigint: bigint): Bytes {
     return fromHexSafe(bigint.toString(16))
   }
 
@@ -229,7 +220,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toBigInt(bytes: Bytes) {
+  export function toBigInt(bytes: Bytes): bigint {
     return BigInt(`0x${toHex(bytes)}`)
   }
 
@@ -259,7 +250,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function padStart(bytes: Bytes, length: number) {
+  export function padStart(bytes: Bytes, length: number): Bytes {
     if (bytes.length >= length)
       return bytes
 
@@ -268,5 +259,15 @@ export namespace Bytes {
 
     return result
   }
+
+  /**
+   * Concatenation using Buffer.concat
+   * @param list 
+   * @returns 
+   */
+  export function concat(list: Bytes[]) {
+    return fromView(Buffer.concat(list))
+  }
+
 
 }

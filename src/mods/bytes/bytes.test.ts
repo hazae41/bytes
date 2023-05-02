@@ -27,8 +27,8 @@ function doNotRun() {
   else
     bytes8 // Bytes<8>
 
-  Bytes.castFromView(bytesX, 16).unwrap() // Bytes<16>
-  Bytes.castFromView(bytes8, 16).unwrap() // Bytes<16>
+  Bytes.tryCastFromView(bytesX, 16).unwrap() // Bytes<16>
+  Bytes.tryCastFromView(bytes8, 16).unwrap() // Bytes<16>
 
   function test(sized: Sized<number, 8>) {
     sized.length // 8
