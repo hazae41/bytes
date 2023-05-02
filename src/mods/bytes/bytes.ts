@@ -11,7 +11,7 @@ export namespace Bytes {
 
   /**
    * Alloc 0-lengthed Bytes using standard constructor
-   * @returns 
+   * @returns `Bytes[]`
    */
   export function empty() {
     return alloc(0)
@@ -20,7 +20,7 @@ export namespace Bytes {
   /**
    * Alloc Bytes with typed length using standard constructor
    * @param length 
-   * @returns 
+   * @returns `Bytes[0;N]`
    */
   export function alloc<N extends number>(length: N) {
     return new Uint8Array(length) as Bytes<N>
@@ -29,7 +29,7 @@ export namespace Bytes {
   /**
    * Alloc Bytes with typed length using Buffer.allocUnsafe
    * @param length 
-   * @returns 
+   * @returns `Bytes[number;N]`
    */
   export function allocUnsafe<N extends number>(length: N) {
     return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
@@ -38,7 +38,7 @@ export namespace Bytes {
   /**
    * Create bytes from sized of length N
    * @param sized 
-   * @returns 
+   * @returns `Bytes[number;N]`
    */
   export function from<N extends number>(sized: Sized<number, N>) {
     return new Uint8Array(sized) as Bytes<N>
@@ -47,7 +47,7 @@ export namespace Bytes {
   /**
    * Alloc Bytes with typed length using Buffer.allocUnsafe and fill it with WebCrypto's CSPRNG
    * @param length 
-   * @returns 
+   * @returns `Bytes[number;N]`
    */
   export function random<N extends number>(length: N) {
     const bytes = allocUnsafe(length)
@@ -65,17 +65,25 @@ export namespace Bytes {
     return bytes.length.valueOf() === length.valueOf()
   }
 
+  export class CastError<N extends number> extends Error {
+    constructor(
+      readonly bytes: Bytes,
+      readonly length: N
+    ) {
+      super(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
+    }
+  }
+
   /**
-   * Cast bytes of N length into Bytes<N>
+   * Try to cast bytes of N length into Bytes<N>
    * @param view 
    * @param length 
    * @returns 
    */
-  export function cast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>> {
+  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, CastError<N>> {
     if (Bytes.is(bytes, length))
       return new Ok(bytes)
-
-    return Err.error(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
+    return new Err(new CastError(bytes, length))
   }
 
   /**
@@ -114,7 +122,7 @@ export namespace Bytes {
    * @returns 
    */
   export function castFromView<N extends number>(view: ArrayBufferView, length: N) {
-    return cast(fromView(view), length)
+    return tryCast(fromView(view), length)
   }
 
   /**

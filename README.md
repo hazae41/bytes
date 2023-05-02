@@ -40,7 +40,7 @@ const bytes8 = Bytes.random(8) // Bytes<8>
 #### Unknown-sized bytes
 
 ```tsx
-const bytesX = Bytes.fromView(new Uint8Array(8)) // Bytes<number>
+const bytesX = new Uint8Array(8) // Bytes<number>
 ```
 
 #### Runtime type-guarding
@@ -64,7 +64,7 @@ else
 #### Runtime casting with Result pattern
 
 ```tsx
-const bytes16 = Bytes.cast(bytesX, 16).unwrap() // Bytes<16>
+const bytes16 = Bytes.tryCast(bytesX, 16).unwrap() // Bytes<16>
 ```
 
 #### Conversion from sized arrays
