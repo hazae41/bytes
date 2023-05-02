@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "@hazae41/bytes",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Utilities to deal with Uint8Array",
   "homepage": "https://github.com/hazae41/bytes",
   "repository": "github:hazae41/bytes",
