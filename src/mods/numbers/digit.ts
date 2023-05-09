@@ -1,4 +1,4 @@
-export type Ten =
+export type Digit =
     | 0
 | 1
 | 2

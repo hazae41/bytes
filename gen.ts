@@ -35,10 +35,10 @@ import { writeFileSync } from "fs"
       yield `| ${x}`
   }
 
-  const script = `export type Ten =
+  const script = `export type Digit =
     ${[...gen()].join(`\n`)}`
 
-  writeFileSync("./src/mods/numbers/ten.ts", script)
+  writeFileSync("./src/mods/numbers/digit.ts", script)
 }
 
 {
@@ -69,3 +69,32 @@ import { writeFileSync } from "fs"
   writeFileSync("./src/mods/numbers/increment10.ts", script)
 }
 
+{
+  function* gen() {
+    for (let x = 0; x < 100; x++)
+      yield `${x}: 0`
+    for (let x = 100; x < (2 ** 16); x++)
+      yield `${x}: ${x - 99}`
+  }
+
+  const script = `export type Decrement100<X extends number> = {
+    [index: number]: number;
+    ${[...gen()].join(`\n`)}
+  }[X]`
+
+  writeFileSync("./src/mods/numbers/decrement100.ts", script)
+}
+
+{
+  function* gen() {
+    for (let x = 0; x < (2 ** 16); x++)
+      yield `${x}: ${x + 99}`
+  }
+
+  const script = `export type Increment100<X extends number> = {
+    [index: number]: number;
+    ${[...gen()].join(`\n`)}
+  }[X]`
+
+  writeFileSync("./src/mods/numbers/increment100.ts", script)
+}
