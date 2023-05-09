@@ -43,6 +43,8 @@ import { writeFileSync } from "fs"
 
 {
   function* gen() {
+    for (let x = 0; x < 10; x++)
+      yield `${x}: 0`
     for (let x = 10; x < (2 ** 16); x++)
       yield `${x}: ${x - 9}`
   }

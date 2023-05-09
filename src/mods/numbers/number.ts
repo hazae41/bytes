@@ -54,21 +54,51 @@ export type Greater<X extends number, Y extends number> =
     )
   )
 
-export type GreaterThanOrEquals10<X extends number, Y extends number> =
+export type GreaterOrEquals10<X extends number, Y extends number> =
   Y extends 0 ? (
     true
   ) : (
     X extends 0 ? (
       false
     ) : (
-      GreaterThanOrEquals10<Decrement<X>, Decrement<Y>>
+      GreaterOrEquals10<Decrement<X>, Decrement<Y>>
+    )
+  )
+
+export type GreaterOrEquals<X extends number, Y extends number> =
+  Y extends Digit ? (
+    X extends Digit ? (
+      GreaterOrEquals10<X, Y>
+    ) : (
+      true
+    )
+  ) : (
+    Decrement100<Y> extends 0 ? (
+      Decrement100<X> extends 0 ? (
+        GreaterOrEquals<Decrement10<X>, Decrement10<Y>>
+      ) : (
+        true
+      )
+    ) : (
+      GreaterOrEquals<Decrement100<X>, Decrement100<Y>>
     )
   )
 
 export type Subtract10<X extends number, Y extends Digit> =
-  GreaterThanOrEquals10<X, Y> extends true ? never : (
-    Y extends 0 ? X : (
-      Subtract10<Decrement<X>, Decrement<Y>>
+  Y extends 0 ? (
+    X
+  ) : (
+    Subtract10<Decrement<X>, Decrement<Y>>
+  )
+
+export type Subtract<X extends number, Y extends number> =
+  Y extends Digit ? (
+    Subtract10<X, Y>
+  ) : (
+    Decrement100<Y> extends 0 ? (
+      Subtract<Decrement10<X>, Decrement10<Y>>
+    ) : (
+      Subtract<Decrement100<X>, Decrement100<Y>>
     )
   )
 
@@ -76,24 +106,18 @@ export function add<X extends number, Y extends number>(x: X, y: Y): Add<X, Y> {
   return x + y as any
 }
 
-function subtract10<X extends number, Y extends Digit>(x: X, y: Y): Subtract10<X, Y> {
+export function subtract10<X extends number, Y extends Digit>(x: X, y: Y): Subtract10<X, Y> {
   return x - y as any
 }
 
-function greaterOrEquals10<X extends number, Y extends Digit>(x: X, y: Y): GreaterThanOrEquals10<X, Y> {
-  return x >= y as any
+export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtract<X, Y> {
+  return x - y as any
 }
 
-function greater10<X extends Digit, Y extends Digit>(x: X, y: Y): Greater10<X, Y> {
-  return x > y as any
+export function greaterOrEquals<X extends number, Y extends number>(x: X, y: Y): GreaterOrEquals<X, Y> {
+  return x >= y as any
 }
 
 export function greater<X extends number, Y extends number>(x: X, y: Y): Greater<X, Y> {
   return x > y as any
 }
-
-subtract10(1, 2)
-
-greaterOrEquals10(5, 3)
-
-greater10(5, 3)
