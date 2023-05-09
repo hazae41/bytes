@@ -130,7 +130,11 @@ export function greater<X extends number, Y extends number>(x: X, y: Y): Greater
 }
 
 function accept<X extends number>(x: Range<X, 100, 200>) {
+  console.log(x)
+}
+
+class Lol<Y extends number, X extends Range<Y, 100, 200>> {
 
 }
 
-accept(199)
+new Lol<150, 150>()
