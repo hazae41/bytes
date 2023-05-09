@@ -102,6 +102,13 @@ export type Subtract<X extends number, Y extends number> =
     )
   )
 
+export type Range<X extends number, Min extends number, Max extends number> =
+  Greater<X, Min> extends true ? (
+    Greater<Max, X> extends true ? (
+      X
+    ) : never
+  ) : never
+
 export function add<X extends number, Y extends number>(x: X, y: Y): Add<X, Y> {
   return x + y as any
 }
@@ -121,3 +128,9 @@ export function greaterOrEquals<X extends number, Y extends number>(x: X, y: Y):
 export function greater<X extends number, Y extends number>(x: X, y: Y): Greater<X, Y> {
   return x > y as any
 }
+
+function accept<X extends number>(x: Range<X, 100, 200>) {
+
+}
+
+accept(199)
