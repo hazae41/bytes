@@ -208,12 +208,14 @@ class Cursor<T extends Bytes, R extends number> {
 
 }
 
-function read5<T extends Bytes, R extends number>(value: Cursor<T, R>): Cursor<T, Subtract<R, 5>> {
+function read5<T extends Bytes, R extends number>(value: Cursor<T, GreaterOrEquals<R, 5>>): Cursor<T, Subtract<R, 5>> {
   return new Cursor(value.inner.slice(0, 5), value.remaining - 5) as any
 }
 
-function readN<T extends Bytes, R extends number, N extends number, SN extends Smaller<N, 5>>(value: Cursor<T, R>): Cursor<T, Subtract<R, SN>> {
-  return new Cursor(value.inner.slice(0, 5), value.remaining - 5) as any
+function read1024<T extends Bytes, R extends number>(value: Cursor<T, GreaterOrEquals<R, 1024>>): Cursor<T, Subtract<R, 1024>> {
+  return new Cursor(value.inner.slice(0, 1024), value.remaining - 1024) as any
 }
 
-read5(Cursor.create(Bytes.random(5)))
+
+
+const cursor1024 = read1024(Cursor.create(Bytes.random(1024)))
