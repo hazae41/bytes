@@ -1,4 +1,3 @@
-import { Bytes } from "index.js";
 import { Decrement } from "./decrement.js";
 import { Decrement10 } from "./decrement10.js";
 import { Decrement100 } from "./decrement100.js";
@@ -8,107 +7,127 @@ import { Increment10 } from "./increment10.js";
 import { Increment100 } from "./increment100.js";
 import { Increment1000 } from "./increment1000.js";
 
-export type Lower1000<X extends number> =
-  Decrement1000<X> extends 0 ? true : false
+export type DecrementN = { [x: number]: number } & Decrement
+export type Decrement10N = { [x: number]: number } & Decrement10
+export type Decrement100N = { [x: number]: number } & Decrement100
+export type Decrement1000N = { [x: number]: number } & Decrement1000
 
-export type Lower100<X extends number> =
-  Decrement100<X> extends 0 ? true : false
+export type IncrementN = { [x: number]: number } & Increment
+export type Increment10N = { [x: number]: number } & Increment10
+export type Increment100N = { [x: number]: number } & Increment100
+export type Increment1000N = { [x: number]: number } & Increment1000
 
-export type Lower10<X extends number> =
-  Decrement10<X> extends 0 ? true : false
+export type LessThan1000<X extends number> =
+  Decrement1000N[X] extends 0 ? true : false
+
+export type LessThan100<X extends number> =
+  Decrement100N[X] extends 0 ? true : false
+
+export type LessThan10<X extends number> =
+  Decrement10N[X] extends 0 ? true : false
+
+export type Greater<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreater<P, T> extends true ? P : never]: never }, string | symbol>
+
+export type GreaterOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreaterOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+
+export type Less<T extends number> = Exclude<keyof { [P in keyof Increment as IsLess<P, T> extends true ? P : never]: never }, string | symbol>
+
+export type LessOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsLessOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+
+export type Range<Min extends number, Max extends number> = Exclude<keyof { [P in keyof Increment as IsRange<P, Min, Max> extends true ? P : never]: never }, string | symbol>
 
 export type Add<X extends number, Y extends number> =
-  Lower1000<Y> extends true ? (
-    Lower100<Y> extends true ? (
-      Lower10<Y> extends true ? (
+  LessThan1000<Y> extends true ? (
+    LessThan100<Y> extends true ? (
+      LessThan10<Y> extends true ? (
         Y extends 0 ? (
           X
         ) : (
-          Add<Increment<X>, Decrement<Y>>
+          Add<IncrementN[X], DecrementN[Y]>
         )
       ) : (
-        Add<Increment10<X>, Decrement10<Y>>
+        Add<Increment10N[X], Decrement10N[Y]>
       )
     ) : (
-      Add<Increment100<X>, Decrement100<Y>>
+      Add<Increment100N[X], Decrement100N[Y]>
     )
   ) : (
-    Add<Increment1000<X>, Decrement1000<Y>>
+    Add<Increment1000N[X], Decrement1000N[Y]>
   )
 
 export type Subtract<X extends number, Y extends number> =
-  Lower1000<Y> extends true ? (
-    Lower100<Y> extends true ? (
-      Lower10<Y> extends true ? (
+  LessThan1000<Y> extends true ? (
+    LessThan100<Y> extends true ? (
+      LessThan10<Y> extends true ? (
         Y extends 0 ? (
           X
         ) : (
-          Subtract<Decrement<X>, Decrement<Y>>
+          Subtract<DecrementN[X], DecrementN[Y]>
         )
       ) : (
-        Subtract<Decrement10<X>, Decrement10<Y>>
+        Subtract<Decrement10N[X], Decrement10N[Y]>
       )
     ) : (
-      Subtract<Decrement100<X>, Decrement100<Y>>
+      Subtract<Decrement100N[X], Decrement100N[Y]>
     )
   ) : (
-    Subtract<Decrement1000<X>, Decrement1000<Y>>
+    Subtract<Decrement1000N[X], Decrement1000N[Y]>
   )
 
 export type IsGreater<X extends number, Y extends number> =
-  Lower1000<X> extends true ? (
-    Lower1000<Y> extends true ? (
-      Lower100<X> extends true ? (
-        Lower100<Y> extends true ? (
-          Lower10<X> extends true ? (
-            Lower10<Y> extends true ? (
+  LessThan1000<X> extends true ? (
+    LessThan1000<Y> extends true ? (
+      LessThan100<X> extends true ? (
+        LessThan100<Y> extends true ? (
+          LessThan10<X> extends true ? (
+            LessThan10<Y> extends true ? (
               X extends 0 ? (
                 false
               ) : (
                 Y extends 0 ? (
                   true
                 ) : (
-                  IsGreater<Decrement<X>, Decrement<Y>>
+                  IsGreater<DecrementN[X], DecrementN[Y]>
                 )
               )
             ) : (
               false
             )
           ) : (
-            Lower10<Y> extends true ? (
+            LessThan10<Y> extends true ? (
               true
             ) : (
-              IsGreater<Decrement10<X>, Decrement10<Y>>
+              IsGreater<Decrement10N[X], Decrement10N[Y]>
             )
           )
         ) : (
           false
         )
       ) : (
-        Lower100<Y> extends true ? (
+        LessThan100<Y> extends true ? (
           true
         ) : (
-          IsGreater<Decrement100<X>, Decrement100<Y>>
+          IsGreater<Decrement100N[X], Decrement100N[Y]>
         )
       )
     ) : (
       false
     )
   ) : (
-    Lower1000<Y> extends true ? (
+    LessThan1000<Y> extends true ? (
       true
     ) : (
-      IsGreater<Decrement1000<X>, Decrement1000<Y>>
+      IsGreater<Decrement1000N[X], Decrement1000N[Y]>
     )
   )
 
 export type IsGreaterOrEquals<X extends number, Y extends number> =
-  Lower1000<X> extends true ? (
-    Lower1000<Y> extends true ? (
-      Lower100<X> extends true ? (
-        Lower100<Y> extends true ? (
-          Lower10<X> extends true ? (
-            Lower10<Y> extends true ? (
+  LessThan1000<X> extends true ? (
+    LessThan1000<Y> extends true ? (
+      LessThan100<X> extends true ? (
+        LessThan100<Y> extends true ? (
+          LessThan10<X> extends true ? (
+            LessThan10<Y> extends true ? (
               X extends 0 ? (
                 Y extends 0 ? (
                   true
@@ -119,57 +138,66 @@ export type IsGreaterOrEquals<X extends number, Y extends number> =
                 Y extends 0 ? (
                   true
                 ) : (
-                  IsGreaterOrEquals<Decrement<X>, Decrement<Y>>
+                  IsGreaterOrEquals<DecrementN[X], DecrementN[Y]>
                 )
               )
             ) : (
               false
             )
           ) : (
-            Lower10<Y> extends true ? (
+            LessThan10<Y> extends true ? (
               true
             ) : (
-              IsGreaterOrEquals<Decrement10<X>, Decrement10<Y>>
+              IsGreaterOrEquals<Decrement10N[X], Decrement10N[Y]>
             )
           )
         ) : (
           false
         )
       ) : (
-        Lower100<Y> extends true ? (
+        LessThan100<Y> extends true ? (
           true
         ) : (
-          IsGreaterOrEquals<Decrement100<X>, Decrement100<Y>>
+          IsGreaterOrEquals<Decrement100N[X], Decrement100N[Y]>
         )
       )
     ) : (
       false
     )
   ) : (
-    Lower1000<Y> extends true ? (
+    LessThan1000<Y> extends true ? (
       true
     ) : (
-      IsGreaterOrEquals<Decrement1000<X>, Decrement1000<Y>>
+      IsGreaterOrEquals<Decrement1000N[X], Decrement1000N[Y]>
     )
   )
 
-export type Greater<X extends number, Y extends number> =
-  IsGreater<X, Y> extends true ? X : never
+export type IsLess<X extends number, Y extends number> =
+  IsGreaterOrEquals<X, Y> extends true ? (
+    false
+  ) : (
+    true
+  )
 
-export type Smaller<X extends number, Y extends number> =
-  IsGreater<Y, X> extends true ? X : never
+export type IsLessOrEquals<X extends number, Y extends number> =
+  IsGreater<X, Y> extends true ? (
+    false
+  ) : (
+    true
+  )
 
-export type GreaterOrEquals<X extends number, Y extends number> =
-  IsGreaterOrEquals<X, Y> extends true ? X : never
+export type IsRange<X extends number, Min extends number, Max extends number> =
+  IsGreater<X, Min> extends true ? (
+    IsLess<X, Max>
+  ) : (
+    false
+  )
 
-export type Range<X extends number, Min extends number, Max extends number> =
-  Greater<X, Min> & Smaller<X, Max>
-
-export function increment<X extends number>(x: X): Increment<X> {
+export function increment<X extends number>(x: X): IncrementN[X] {
   return x + 1
 }
 
-export function decrement<X extends number>(x: X): Decrement<X> {
+export function decrement<X extends number>(x: X): DecrementN[X] {
   return x - 1
 }
 
@@ -181,41 +209,18 @@ export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtra
   return x - y as any
 }
 
-export function greaterOrEquals<X extends number, Y extends number>(x: X, y: Y): IsGreaterOrEquals<X, Y> {
+export function greaterOrEquals<Y extends number>(x: number, y: Y): x is GreaterOrEquals<Y> {
   return x >= y as any
 }
 
-export function greater<X extends number, Y extends number>(x: X, y: Y): IsGreater<X, Y> {
+export function greater<Y extends number>(x: number, y: Y): x is Greater<Y> {
   return x > y as any
 }
 
-function incrementRange<X extends number>(x: Range<X, 100, 200>) {
-  return add(x, 1)
+export function smallerOrEquals<Y extends number>(x: number, y: Y): x is LessOrEquals<Y> {
+  return x <= y as any
 }
 
-incrementRange(123)
-
-class Cursor<T extends Bytes, R extends number> {
-
-  constructor(
-    readonly inner: T,
-    readonly remaining: R
-  ) { }
-
-  static create<N extends number>(inner: Bytes<N>): Cursor<Bytes<N>, N> {
-    return new Cursor(inner, inner.length)
-  }
-
+export function smaller<Y extends number>(x: number, y: Y): x is Less<Y> {
+  return x < y as any
 }
-
-function read5<T extends Bytes, R extends number>(value: Cursor<T, GreaterOrEquals<R, 5>>): Cursor<T, Subtract<R, 5>> {
-  return new Cursor(value.inner.slice(0, 5), value.remaining - 5) as any
-}
-
-function read1024<T extends Bytes, R extends number>(value: Cursor<T, GreaterOrEquals<R, 1024>>): Cursor<T, Subtract<R, 1024>> {
-  return new Cursor(value.inner.slice(0, 1024), value.remaining - 1024) as any
-}
-
-
-
-const cursor1024 = read1024(Cursor.create(Bytes.random(1024)))

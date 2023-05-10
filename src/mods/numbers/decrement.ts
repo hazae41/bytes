@@ -1,5 +1,4 @@
-export type Decrement<X extends number> = {
-    [index: number]: number
+export type Decrement = {
     0: 0
 1: 0
 2: 1
@@ -65536,4 +65535,4 @@ export type Decrement<X extends number> = {
 65533: 65532
 65534: 65533
 65535: 65534
-  }[X]
+  }

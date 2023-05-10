@@ -1,5 +1,4 @@
-export type Increment1000<X extends number> = {
-    [index: number]: number
+export type Increment1000 = {
     0: 999
 1: 1000
 2: 1001
@@ -65536,4 +65535,4 @@ export type Increment1000<X extends number> = {
 65533: 66532
 65534: 66533
 65535: 66534
-  }[X]
+  }
