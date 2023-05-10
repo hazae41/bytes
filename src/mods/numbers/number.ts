@@ -26,15 +26,20 @@ export type LessThan100<X extends number> =
 export type LessThan10<X extends number> =
   Decrement10N[X] extends 0 ? true : false
 
-export type Greater<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreater<P, T> extends true ? P : never]: never }, string | symbol>
+export type Greater<T extends number> = number & { __greater: T }
+export type Less<T extends number> = number & { __less: T }
 
-export type GreaterOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreaterOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+export type Range<Min extends number, Max extends number> = Greater<Min> & Less<Max>
 
-export type Less<T extends number> = Exclude<keyof { [P in keyof Increment as IsLess<P, T> extends true ? P : never]: never }, string | symbol>
+// export type Greater<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreater<P, T> extends true ? P : never]: never }, string | symbol>
 
-export type LessOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsLessOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+// export type GreaterOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreaterOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
 
-export type Range<Min extends number, Max extends number> = Exclude<keyof { [P in keyof Increment as IsRange<P, Min, Max> extends true ? P : never]: never }, string | symbol>
+// export type Less<T extends number> = Exclude<keyof { [P in keyof Increment as IsLess<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type LessOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsLessOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type Range<Min extends number, Max extends number> = Exclude<keyof { [P in keyof Increment as IsRange<P, Min, Max> extends true ? P : never]: never }, string | symbol>
 
 export type Add<X extends number, Y extends number> =
   LessThan1000<Y> extends true ? (
@@ -209,17 +214,17 @@ export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtra
   return x - y as any
 }
 
-export function greaterOrEquals<Y extends number>(x: number, y: Y): x is GreaterOrEquals<Y> {
-  return x >= y as any
-}
+// export function greaterOrEquals<Y extends number>(x: number, y: Y): x is GreaterOrEquals<Y> {
+//   return x >= y as any
+// }
 
 export function greater<Y extends number>(x: number, y: Y): x is Greater<Y> {
   return x > y as any
 }
 
-export function smallerOrEquals<Y extends number>(x: number, y: Y): x is LessOrEquals<Y> {
-  return x <= y as any
-}
+// export function smallerOrEquals<Y extends number>(x: number, y: Y): x is LessOrEquals<Y> {
+//   return x <= y as any
+// }
 
 export function smaller<Y extends number>(x: number, y: Y): x is Less<Y> {
   return x < y as any
