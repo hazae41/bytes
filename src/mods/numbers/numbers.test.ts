@@ -1,5 +1,5 @@
 import { Bytes } from "index.js";
-import { Range, add, greater, subtract } from "./number.js";
+import { IsGreaterOrEquals, IsLessOrEquals, Range, add, greater, subtract } from "./number.js";
 
 const x = add(30_010, 30_000)
 const y = subtract(5_800, 5_700)
@@ -34,9 +34,14 @@ class Cursor<T extends Bytes> {
 
 // const cursor1024 = read1024(Cursor.create(Bytes.random(2048)))
 
-const b = Bytes.random(1024) as Bytes<Range<100, 200>>
-const c = Cursor.create(b)
+const n = 150 as Range<100, 200>
 
-function test<Min extends number, Max extends number>(c: Range<Min, Max>): {
+function accept(range: Range<0, 200>) {
 
 }
+
+function rerange<Min extends number, Max extends number, Min2 extends number, Max2 extends number>(range: Range<IsGreaterOrEquals<Min, Min2> extends true ? Min : never, IsLessOrEquals<Max, Max2> extends true ? Max : never>): Range<Min2, Max2> {
+  return range as any
+}
+
+accept(rerange(n))
