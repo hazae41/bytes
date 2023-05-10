@@ -233,7 +233,7 @@ export namespace Bytes {
    * @returns 
    */
   export function sliceOrPadStart<N extends number>(bytes: Bytes, length: N): Bytes<N> {
-    if (length < bytes.length)
+    if (bytes.length >= length)
       return fromView(bytes.slice(bytes.length - length, bytes.length)) as Bytes<N>
 
     const result = Bytes.alloc(length)
@@ -251,7 +251,7 @@ export namespace Bytes {
    * @returns 
    */
   export function padStart(bytes: Bytes, length: number): Bytes {
-    if (length < bytes.length)
+    if (bytes.length >= length)
       return bytes
 
     const result = Bytes.alloc(length)
