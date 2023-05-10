@@ -1,3 +1,4 @@
+import { Bytes } from "index.js";
 import { Decrement } from "./decrement.js";
 import { Decrement10 } from "./decrement10.js";
 import { Decrement100 } from "./decrement100.js";
@@ -54,7 +55,7 @@ export type Subtract<X extends number, Y extends number> =
     Subtract<Decrement1000<X>, Decrement1000<Y>>
   )
 
-export type Greater<X extends number, Y extends number> =
+export type IsGreater<X extends number, Y extends number> =
   Lower1000<X> extends true ? (
     Lower1000<Y> extends true ? (
       Lower100<X> extends true ? (
@@ -67,7 +68,7 @@ export type Greater<X extends number, Y extends number> =
                 Y extends 0 ? (
                   true
                 ) : (
-                  Greater<Decrement<X>, Decrement<Y>>
+                  IsGreater<Decrement<X>, Decrement<Y>>
                 )
               )
             ) : (
@@ -77,7 +78,7 @@ export type Greater<X extends number, Y extends number> =
             Lower10<Y> extends true ? (
               true
             ) : (
-              Greater<Decrement10<X>, Decrement10<Y>>
+              IsGreater<Decrement10<X>, Decrement10<Y>>
             )
           )
         ) : (
@@ -87,7 +88,7 @@ export type Greater<X extends number, Y extends number> =
         Lower100<Y> extends true ? (
           true
         ) : (
-          Greater<Decrement100<X>, Decrement100<Y>>
+          IsGreater<Decrement100<X>, Decrement100<Y>>
         )
       )
     ) : (
@@ -97,11 +98,11 @@ export type Greater<X extends number, Y extends number> =
     Lower1000<Y> extends true ? (
       true
     ) : (
-      Greater<Decrement1000<X>, Decrement1000<Y>>
+      IsGreater<Decrement1000<X>, Decrement1000<Y>>
     )
   )
 
-export type GreaterOrEquals<X extends number, Y extends number> =
+export type IsGreaterOrEquals<X extends number, Y extends number> =
   Lower1000<X> extends true ? (
     Lower1000<Y> extends true ? (
       Lower100<X> extends true ? (
@@ -118,7 +119,7 @@ export type GreaterOrEquals<X extends number, Y extends number> =
                 Y extends 0 ? (
                   true
                 ) : (
-                  GreaterOrEquals<Decrement<X>, Decrement<Y>>
+                  IsGreaterOrEquals<Decrement<X>, Decrement<Y>>
                 )
               )
             ) : (
@@ -128,7 +129,7 @@ export type GreaterOrEquals<X extends number, Y extends number> =
             Lower10<Y> extends true ? (
               true
             ) : (
-              GreaterOrEquals<Decrement10<X>, Decrement10<Y>>
+              IsGreaterOrEquals<Decrement10<X>, Decrement10<Y>>
             )
           )
         ) : (
@@ -138,7 +139,7 @@ export type GreaterOrEquals<X extends number, Y extends number> =
         Lower100<Y> extends true ? (
           true
         ) : (
-          GreaterOrEquals<Decrement100<X>, Decrement100<Y>>
+          IsGreaterOrEquals<Decrement100<X>, Decrement100<Y>>
         )
       )
     ) : (
@@ -148,16 +149,21 @@ export type GreaterOrEquals<X extends number, Y extends number> =
     Lower1000<Y> extends true ? (
       true
     ) : (
-      GreaterOrEquals<Decrement1000<X>, Decrement1000<Y>>
+      IsGreaterOrEquals<Decrement1000<X>, Decrement1000<Y>>
     )
   )
 
+export type Greater<X extends number, Y extends number> =
+  IsGreater<X, Y> extends true ? X : never
+
+export type Smaller<X extends number, Y extends number> =
+  IsGreater<Y, X> extends true ? X : never
+
+export type GreaterOrEquals<X extends number, Y extends number> =
+  IsGreaterOrEquals<X, Y> extends true ? X : never
+
 export type Range<X extends number, Min extends number, Max extends number> =
-  Greater<X, Min> extends true ? (
-    Greater<Max, X> extends true ? (
-      X
-    ) : never
-  ) : never
+  Greater<X, Min> & Smaller<X, Max>
 
 export function increment<X extends number>(x: X): Increment<X> {
   return x + 1
@@ -175,11 +181,11 @@ export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtra
   return x - y as any
 }
 
-export function greaterOrEquals<X extends number, Y extends number>(x: X, y: Y): GreaterOrEquals<X, Y> {
+export function greaterOrEquals<X extends number, Y extends number>(x: X, y: Y): IsGreaterOrEquals<X, Y> {
   return x >= y as any
 }
 
-export function greater<X extends number, Y extends number>(x: X, y: Y): Greater<X, Y> {
+export function greater<X extends number, Y extends number>(x: X, y: Y): IsGreater<X, Y> {
   return x > y as any
 }
 
@@ -189,20 +195,25 @@ function incrementRange<X extends number>(x: Range<X, 100, 200>) {
 
 incrementRange(123)
 
-class Holder<N extends number> {
-  constructor(readonly inner: N) { }
-}
+class Cursor<T extends Bytes, R extends number> {
 
-function incrementRangeHolder<X extends number>(holder: Holder<Range<X, 100, 200>>) {
-  return new Holder(add(holder.inner, 1))
-}
+  constructor(
+    readonly inner: T,
+    readonly remaining: R
+  ) { }
 
-incrementRangeHolder(new Holder(123))
-
-class RangeClass<X extends number> {
-  constructor(readonly inner: Range<X, 100, 200>) { }
-
-  increment() {
-    increment(this.inner)
+  static create<N extends number>(inner: Bytes<N>): Cursor<Bytes<N>, N> {
+    return new Cursor(inner, inner.length)
   }
+
 }
+
+function read5<T extends Bytes, R extends number>(value: Cursor<T, R>): Cursor<T, Subtract<R, 5>> {
+  return new Cursor(value.inner.slice(0, 5), value.remaining - 5) as any
+}
+
+function readN<T extends Bytes, R extends number, N extends number, SN extends Smaller<N, 5>>(value: Cursor<T, R>): Cursor<T, Subtract<R, SN>> {
+  return new Cursor(value.inner.slice(0, 5), value.remaining - 5) as any
+}
+
+read5(Cursor.create(Bytes.random(5)))
