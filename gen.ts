@@ -100,3 +100,33 @@ import { writeFileSync } from "fs"
 
   writeFileSync("./src/mods/numbers/increment100.ts", script)
 }
+
+{
+  function* gen() {
+    for (let x = 0; x < 1000; x++)
+      yield `${x}: 0`
+    for (let x = 1000; x < (2 ** 16); x++)
+      yield `${x}: ${x - 999}`
+  }
+
+  const script = `export type Decrement1000<X extends number> = {
+    [index: number]: number;
+    ${[...gen()].join(`\n`)}
+  }[X]`
+
+  writeFileSync("./src/mods/numbers/decrement1000.ts", script)
+}
+
+{
+  function* gen() {
+    for (let x = 0; x < (2 ** 16); x++)
+      yield `${x}: ${x + 999}`
+  }
+
+  const script = `export type Increment1000<X extends number> = {
+    [index: number]: number;
+    ${[...gen()].join(`\n`)}
+  }[X]`
+
+  writeFileSync("./src/mods/numbers/increment1000.ts", script)
+}

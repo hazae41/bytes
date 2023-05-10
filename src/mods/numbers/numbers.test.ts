@@ -1,4 +1,4 @@
-import { add, greater, greaterOrEquals, subtract, subtract10 } from "./number.js";
+import { add, greater, greaterOrEquals, subtract } from "./number.js";
 
 
 
@@ -8,12 +8,11 @@ import { add, greater, greaterOrEquals, subtract, subtract10 } from "./number.js
 const x = add(30_000, 30_000)
 
 
-const y = subtract10(6, 9)
-const y2 = subtract(56, 57)
+const y2 = subtract(5_800, 5_700)
 
 
 
-const p = greater(3, 2)
+const p = greater(20_000, 20_000)
 
 const p2 = greaterOrEquals(50_002, 50_001)
 

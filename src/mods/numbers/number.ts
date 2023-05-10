@@ -1,56 +1,95 @@
 import { Decrement } from "./decrement.js";
 import { Decrement10 } from "./decrement10.js";
 import { Decrement100 } from "./decrement100.js";
+import { Decrement1000 } from "./decrement1000.js";
 import { Digit } from "./digit.js";
 import { Increment } from "./increment.js";
 import { Increment10 } from "./increment10.js";
 import { Increment100 } from "./increment100.js";
-
-export type Add10<X extends number, Y extends Digit> =
-  Y extends 0 ? (
-    X
-  ) : (
-    Add10<Increment<X>, Decrement<Y>>
-  )
+import { Increment1000 } from "./increment1000.js";
 
 export type Add<X extends number, Y extends number> =
-  Y extends Digit ? (
-    Add10<X, Y>
-  ) : (
+  Decrement1000<Y> extends 0 ? (
     Decrement100<Y> extends 0 ? (
-      Add<Increment10<X>, Decrement10<Y>>
+      Y extends Digit ? (
+        Y extends 0 ? (
+          X
+        ) : (
+          Add<Increment<X>, Decrement<Y>>
+        )
+      ) : (
+        Add<Increment10<X>, Decrement10<Y>>
+      )
     ) : (
       Add<Increment100<X>, Decrement100<Y>>
     )
+  ) : (
+    Add<Increment1000<X>, Decrement1000<Y>>
   )
 
-export type Greater10<X extends Digit, Y extends Digit> =
-  X extends 0 ? (
-    false
-  ) : (
-    Y extends 0 ? (
-      true
+export type Subtract<X extends number, Y extends number> =
+  Decrement1000<Y> extends 0 ? (
+    Decrement100<Y> extends 0 ? (
+      Y extends Digit ? (
+        Y extends 0 ? (
+          X
+        ) : (
+          Subtract<Decrement<X>, Decrement<Y>>
+        )
+      ) : (
+        Subtract<Decrement10<X>, Decrement10<Y>>
+      )
     ) : (
-      Greater10<Decrement<X>, Decrement<Y>>
+      Subtract<Decrement100<X>, Decrement100<Y>>
     )
+  ) : (
+    Subtract<Decrement1000<X>, Decrement1000<Y>>
   )
 
 export type Greater<X extends number, Y extends number> =
-  Y extends Digit ? (
-    X extends Digit ? (
-      Greater10<X, Y>
+  Decrement1000<Y> extends 0 ? (
+    Decrement1000<X> extends 0 ? (
+      Decrement100<Y> extends 0 ? (
+        Decrement100<X> extends 0 ? (
+          Decrement10<Y> extends 0 ? (
+            Decrement10<X> extends 0 ? (
+              X extends 0 ? (
+                false
+              ) : (
+                Y extends 0 ? (
+                  true
+                ) : (
+                  Greater<Decrement<X>, Decrement<Y>>
+                )
+              )
+            ) : (
+              true
+            )
+          ) : (
+            Decrement10<X> extends 0 ? (
+              false
+            ) : (
+              Greater<Decrement10<X>, Decrement10<Y>>
+            )
+          )
+        ) : (
+          true
+        )
+      ) : (
+        Decrement100<X> extends 0 ? (
+          false
+        ) : (
+          Greater<Decrement100<X>, Decrement100<Y>>
+        )
+      )
     ) : (
       true
     )
   ) : (
-    Decrement100<Y> extends 0 ? (
-      Decrement100<X> extends 0 ? (
-        Greater<Decrement10<X>, Decrement10<Y>>
-      ) : (
-        true
-      )
+    Decrement1000<X> extends 0 ? (
+      false
     ) : (
-      Greater<Decrement100<X>, Decrement100<Y>>
+      Greater<Decrement1000<X>, Decrement1000<Y>>
     )
   )
 
@@ -84,24 +123,6 @@ export type GreaterOrEquals<X extends number, Y extends number> =
     )
   )
 
-export type Subtract10<X extends number, Y extends Digit> =
-  Y extends 0 ? (
-    X
-  ) : (
-    Subtract10<Decrement<X>, Decrement<Y>>
-  )
-
-export type Subtract<X extends number, Y extends number> =
-  Y extends Digit ? (
-    Subtract10<X, Y>
-  ) : (
-    Decrement100<Y> extends 0 ? (
-      Subtract<Decrement10<X>, Decrement10<Y>>
-    ) : (
-      Subtract<Decrement100<X>, Decrement100<Y>>
-    )
-  )
-
 export type Range<X extends number, Min extends number, Max extends number> =
   Greater<X, Min> extends true ? (
     Greater<Max, X> extends true ? (
@@ -109,12 +130,16 @@ export type Range<X extends number, Min extends number, Max extends number> =
     ) : never
   ) : never
 
-export function add<X extends number, Y extends number>(x: X, y: Y): Add<X, Y> {
-  return x + y as any
+export function increment<X extends number>(x: X): Increment<X> {
+  return x + 1
 }
 
-export function subtract10<X extends number, Y extends Digit>(x: X, y: Y): Subtract10<X, Y> {
-  return x - y as any
+export function decrement<X extends number>(x: X): Decrement<X> {
+  return x - 1
+}
+
+export function add<X extends number, Y extends number>(x: X, y: Y): Add<X, Y> {
+  return x + y as any
 }
 
 export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtract<X, Y> {
@@ -129,12 +154,26 @@ export function greater<X extends number, Y extends number>(x: X, y: Y): Greater
   return x > y as any
 }
 
-function accept<X extends number>(x: Range<X, 100, 200>) {
-  console.log(x)
+function incrementRange<X extends number>(x: Range<X, 100, 200>) {
+  return add(x, 1)
 }
 
-class Lol<Y extends number, X extends Range<Y, 100, 200>> {
+incrementRange(123)
 
+class Holder<N extends number> {
+  constructor(readonly inner: N) { }
 }
 
-new Lol<150, 150>()
+function incrementRangeHolder<X extends number>(holder: Holder<Range<X, 100, 200>>) {
+  return new Holder(add(holder.inner, 1))
+}
+
+incrementRangeHolder(new Holder(123))
+
+class RangeClass<X extends number> {
+  constructor(readonly inner: Range<X, 100, 200>) { }
+
+  increment() {
+    increment(this.inner)
+  }
+}
