@@ -11,7 +11,7 @@ import { Increment1000 } from "./increment1000.js";
 export type Add<X extends number, Y extends number> =
   Decrement1000<Y> extends 0 ? (
     Decrement100<Y> extends 0 ? (
-      Y extends Digit ? (
+      Decrement10<Y> extends 0 ? (
         Y extends 0 ? (
           X
         ) : (
@@ -30,7 +30,7 @@ export type Add<X extends number, Y extends number> =
 export type Subtract<X extends number, Y extends number> =
   Decrement1000<Y> extends 0 ? (
     Decrement100<Y> extends 0 ? (
-      Y extends Digit ? (
+      Decrement10<Y> extends 0 ? (
         Y extends 0 ? (
           X
         ) : (
