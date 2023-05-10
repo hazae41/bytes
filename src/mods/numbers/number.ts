@@ -26,21 +26,6 @@ export type LessThan100<X extends number> =
 export type LessThan10<X extends number> =
   Decrement10N[X] extends 0 ? true : false
 
-export type Greater<T extends number> = number & { __greater: T }
-export type Less<T extends number> = number & { __less: T }
-
-export type Range<Min extends number, Max extends number> = Greater<Min> & Less<Max>
-
-// export type Greater<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreater<P, T> extends true ? P : never]: never }, string | symbol>
-
-// export type GreaterOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreaterOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
-
-// export type Less<T extends number> = Exclude<keyof { [P in keyof Increment as IsLess<P, T> extends true ? P : never]: never }, string | symbol>
-
-// export type LessOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsLessOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
-
-// export type Range<Min extends number, Max extends number> = Exclude<keyof { [P in keyof Increment as IsRange<P, Min, Max> extends true ? P : never]: never }, string | symbol>
-
 export type Add<X extends number, Y extends number> =
   LessThan1000<Y> extends true ? (
     LessThan100<Y> extends true ? (
@@ -198,14 +183,6 @@ export type IsRange<X extends number, Min extends number, Max extends number> =
     false
   )
 
-export function increment<X extends number>(x: X): IncrementN[X] {
-  return x + 1
-}
-
-export function decrement<X extends number>(x: X): DecrementN[X] {
-  return x - 1
-}
-
 export function add<X extends number, Y extends number>(x: X, y: Y): Add<X, Y> {
   return x + y as any
 }
@@ -214,18 +191,70 @@ export function subtract<X extends number, Y extends number>(x: X, y: Y): Subtra
   return x - y as any
 }
 
+/**
+ * Nevering: not super slow but annoying to use and the compiler will be mad at you if nesting in objects with other generics
+ */
+
+// export type Greater<X extends number, Y extends number> =
+//   IsGreater<X, Y> extends true ? X : never
+
+// export type Less<X extends number, Y extends number> =
+//   IsLess<X, Y> extends true ? X : never
+
+export type GreaterOrEquals<X extends number, Y extends number> =
+  IsGreaterOrEquals<X, Y> extends true ? X : never
+
+// export type LessOrEquals<X extends number, Y extends number> =
+//   IsLessOrEquals<X, Y> extends true ? X : never
+
+function increment<X extends number>(x: GreaterOrEquals<X, 100>) {
+  return add(x, 1)
+}
+
+increment(150) // 151
+
+/**
+ * Remapping: elegant but slowwwwwwww
+ */
+
+// export type Greater<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreater<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type GreaterOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsGreaterOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type Less<T extends number> = Exclude<keyof { [P in keyof Increment as IsLess<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type LessOrEquals<T extends number> = Exclude<keyof { [P in keyof Increment as IsLessOrEquals<P, T> extends true ? P : never]: never }, string | symbol>
+
+// export type Range<Min extends number, Max extends number> = Exclude<keyof { [P in keyof Increment as IsRange<P, Min, Max> extends true ? P : never]: never }, string | symbol>
+
+// function increment(x: Greater<100>) {
+//   return add(x, 1)
+// }
+
+// const x = increment(150) // Greater<101>
+
+/**
+ * Type guarding: this is annoying to use and doesn't solve anything
+ */
+
+// export type Greater<T extends number> = number & { __greater: T }
+
+// export type Less<T extends number> = number & { __less: T }
+
+// export type Range<Min extends number, Max extends number> = Greater<Min> & Less<Max>
+
+// export function greater<Y extends number>(x: number, y: Y): x is Greater<Y> {
+//   return x > y as any
+// }
+
+// export function less<Y extends number>(x: number, y: Y): x is Less<Y> {
+//   return x < y as any
+// }
+
 // export function greaterOrEquals<Y extends number>(x: number, y: Y): x is GreaterOrEquals<Y> {
 //   return x >= y as any
 // }
 
-export function greater<Y extends number>(x: number, y: Y): x is Greater<Y> {
-  return x > y as any
-}
-
-// export function smallerOrEquals<Y extends number>(x: number, y: Y): x is LessOrEquals<Y> {
+// export function lessOrEquals<Y extends number>(x: number, y: Y): x is LessOrEquals<Y> {
 //   return x <= y as any
 // }
-
-export function smaller<Y extends number>(x: number, y: Y): x is Less<Y> {
-  return x < y as any
-}

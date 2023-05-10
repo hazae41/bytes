@@ -1,5 +1,5 @@
 import { Bytes } from "index.js";
-import { IsGreaterOrEquals, IsLessOrEquals, Range, add, greater, subtract } from "./number.js";
+import { Greater, IsGreaterOrEquals, IsLessOrEquals, Range, Subtract, add, greater, subtract } from "./number.js";
 
 const x = add(30_010, 30_000)
 const y = subtract(5_800, 5_700)
@@ -7,15 +7,19 @@ const y = subtract(5_800, 5_700)
 const p = greater(1, 1)
 // const p2 = greaterOrEquals(10_003, 10_002)
 
-class Cursor<T extends Bytes> {
+class Cursor<T extends Bytes, R extends number> {
 
   constructor(
     readonly inner: T,
-    readonly offset: number
+    readonly remaining: R
   ) { }
 
-  static create<Min extends number, Max extends number>(inner: Bytes<Range<Min, Max>>): Cursor<Bytes<Range<Min, Max>>> {
-    return new Cursor(inner, inner.length)
+  static create<N extends number>(inner: Bytes<N>): Cursor<Bytes<N>, Range<N, N>> {
+    return new Cursor(inner, inner.length as any as Range<N, N>)
+  }
+
+  static rerange<T extends Bytes, Min extends number, Max extends number, Min2 extends number, Max2 extends number>(cursor: Cursor<T, Range<GreaterOrEquals2<Min, Min2>, LessOrEquals2<Max, Max2>>>): Cursor<T, Range<Min2, Max2>> {
+    return cursor as any
   }
 
 }
@@ -36,12 +40,32 @@ class Cursor<T extends Bytes> {
 
 const n = 150 as Range<100, 200>
 
-function accept(range: Range<0, 200>) {
+function accept(range: Greater<50>) {
 
 }
 
-function rerange<Min extends number, Max extends number, Min2 extends number, Max2 extends number>(range: Range<IsGreaterOrEquals<Min, Min2> extends true ? Min : never, IsLessOrEquals<Max, Max2> extends true ? Max : never>): Range<Min2, Max2> {
+type GreaterOrEquals2<X extends number, Y extends number> =
+  IsGreaterOrEquals<X, Y> extends true ? X : never
+type LessOrEquals2<X extends number, Y extends number> =
+  IsLessOrEquals<X, Y> extends true ? X : never
+
+function rerange<Min extends number, Max extends number, Min2 extends number, Max2 extends number>(range: Range<GreaterOrEquals2<Min, Min2>, LessOrEquals2<Max, Max2>>): Range<Min2, Max2> {
   return range as any
 }
 
 accept(rerange(n))
+
+function read1024<T extends Bytes, Max extends number>(cursor: Cursor<T, Range<1024, Max>>): Cursor<Bytes, Range<0, Subtract<Max, 1024>>> {
+  return new Cursor(cursor.inner.slice(0, 1024), cursor.remaining - 1024) as any
+}
+
+function readN<T extends Bytes, N extends number, Max extends number>(cursor: Cursor<T, Range<N, Max>>, length: N): Cursor<Bytes, Range<0, Subtract<Max, 1024>>> {
+  return new Cursor(cursor.inner.slice(0, length), cursor.remaining - length) as any
+}
+
+
+const c = Cursor.create(Bytes.random(2048))
+
+read1024(Cursor.rerange(c))
+readN(Cursor.rerange(c), 1024)
+
