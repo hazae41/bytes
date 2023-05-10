@@ -1,7 +1,7 @@
 export type Decrement<X extends number> = {
-    [index: number]: number;
-    0: never;
-    1: 0
+    [index: number]: number
+    0: 0
+1: 0
 2: 1
 3: 2
 4: 3

@@ -5,16 +5,16 @@ import { add, greater, greaterOrEquals, subtract } from "./number.js";
 
 
 
-const x = add(30_000, 30_000)
+const x = add(30_010, 30_000)
 
 
 const y2 = subtract(5_800, 5_700)
 
 
 
-const p = greater(20_000, 20_000)
+const p = greater(1, 1)
 
-const p2 = greaterOrEquals(50_002, 50_001)
+const p2 = greaterOrEquals(10_003, 10_002)
 
 
 x;

@@ -1,5 +1,5 @@
 export type Increment100<X extends number> = {
-    [index: number]: number;
+    [index: number]: number
     0: 99
 1: 100
 2: 101
