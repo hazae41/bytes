@@ -22,7 +22,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@hazae41/result": "^1.0.24"
+    "@hazae41/result": "^1.0.26"
   },
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
