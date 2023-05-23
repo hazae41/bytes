@@ -107,7 +107,17 @@ export namespace Bytes {
   }
 
   /**
-   * Cast view of N length into Bytes<N>
+   * Try to cast bytes of N length into Bytes<N>
+   * @param view 
+   * @param length 
+   * @returns 
+   */
+  export function tryCastFrom<N extends number>(array: ArrayLike<number>, length: N): Result<Bytes<N>, CastError<N>> {
+    return tryCast(new Uint8Array(array), length)
+  }
+
+  /**
+   * Zero-copy conversion from ArrayBufferView of N length into Bytes<N>
    * @param view 
    * @param length 
    * @returns 
