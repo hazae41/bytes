@@ -7,6 +7,18 @@ const decoder = new TextDecoder()
 
 export type Bytes<N extends number = number> = Uint8Array & { length: N }
 
+export class BytesCastError<N extends number = number> extends Error {
+  readonly #class = BytesCastError
+  readonly name = this.#class.name
+
+  constructor(
+    readonly bytes: Bytes,
+    readonly length: N
+  ) {
+    super(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
+  }
+}
+
 export namespace Bytes {
 
   /**
@@ -85,25 +97,16 @@ export namespace Bytes {
     return Buffers.fromView(a).equals(Buffers.fromView(b))
   }
 
-  export class CastError<N extends number> extends Error {
-    constructor(
-      readonly bytes: Bytes,
-      readonly length: N
-    ) {
-      super(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
-    }
-  }
-
   /**
    * Try to cast bytes of N length into Bytes<N>
    * @param view 
    * @param length 
    * @returns 
    */
-  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, CastError<N>> {
+  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError<N>> {
     if (Bytes.is(bytes, length))
       return new Ok(bytes)
-    return new Err(new CastError(bytes, length))
+    return new Err(new BytesCastError(bytes, length))
   }
 
   /**
@@ -112,7 +115,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryCastFrom<N extends number>(array: ArrayLike<number>, length: N): Result<Bytes<N>, CastError<N>> {
+  export function tryCastFrom<N extends number>(array: ArrayLike<number>, length: N): Result<Bytes<N>, BytesCastError<N>> {
     return tryCast(new Uint8Array(array), length)
   }
 
@@ -122,7 +125,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryCastFromView<N extends number>(view: ArrayBufferView, length: N): Result<Bytes<N>, CastError<N>> {
+  export function tryCastFromView<N extends number>(view: ArrayBufferView, length: N): Result<Bytes<N>, BytesCastError<N>> {
     return tryCast(fromView(view), length)
   }
 
