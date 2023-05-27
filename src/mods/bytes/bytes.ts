@@ -5,7 +5,8 @@ import { Sized } from "../sized/sized.js"
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-export type Bytes<N extends number = number> = Uint8Array & { length: N }
+export type BytesError =
+  | BytesCastError
 
 export class BytesCastError<N extends number = number> extends Error {
   readonly #class = BytesCastError
@@ -18,6 +19,8 @@ export class BytesCastError<N extends number = number> extends Error {
     super(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
   }
 }
+
+export type Bytes<N extends number = number> = Uint8Array & { length: N }
 
 export namespace Bytes {
 
