@@ -98,11 +98,25 @@ export namespace Bytes {
 
   /**
    * Create bytes from sized of length N
+   * @deprecated
    * @param sized 
    * @returns `Bytes[number;N]`
    */
   export function from<N extends number>(sized: Sized<number, N>): Bytes<N> {
     return new Uint8Array(sized) as Bytes<N>
+  }
+
+  /**
+   * Create bytes from sized of length N
+   * @param sized 
+   * @returns `Bytes[number;N]`
+   */
+  export function tryFrom<N extends number>(sized: Sized<number, N>): Result<Bytes<N>, BytesAllocError<N>> {
+    try {
+      return new Ok(new Uint8Array(sized) as Bytes<N>)
+    } catch (e: unknown) {
+      return new Err(new BytesAllocError(sized.length))
+    }
   }
 
   /**
