@@ -46,7 +46,7 @@ export namespace Bytes {
     return alloc(0)
   }
 
-  export function tryEmpty(): Result<Bytes<0>, BytesAllocError> {
+  export function tryEmpty(): Result<Bytes<0>, BytesAllocError<0>> {
     return tryAlloc(0)
   }
 
@@ -65,7 +65,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[0;N]`
    */
-  export function tryAlloc<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+  export function tryAlloc<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
     try {
       return new Ok(new Uint8Array(length) as Bytes<N>)
     } catch (e: unknown) {
@@ -88,7 +88,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[number;N]`
    */
-  export function tryAllocUnsafe<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+  export function tryAllocUnsafe<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
     try {
       return new Ok(fromView(Buffer.allocUnsafe(length)) as Bytes<N>)
     } catch (e: unknown) {
@@ -122,7 +122,7 @@ export namespace Bytes {
    * @param length 
    * @returns `Bytes[number;N]`
    */
-  export function tryRandom<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+  export function tryRandom<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
     const result = tryAllocUnsafe(length)
     result.inspectSync(bytes => crypto.getRandomValues(bytes))
     return result
@@ -307,12 +307,33 @@ export namespace Bytes {
    * @returns 
    */
   export function sliceOrPadStart<N extends number>(bytes: Bytes, length: N): Bytes<N> {
-    if (bytes.length >= length)
-      return fromView(bytes.slice(bytes.length - length, bytes.length)) as Bytes<N>
+    if (bytes.length >= length) {
+      const slice = bytes.slice(bytes.length - length, bytes.length)
+      return fromView(slice) as Bytes<N>
+    }
 
     const result = Bytes.alloc(length)
     result.set(bytes, length - bytes.length)
 
+    return result
+  }
+
+  /**
+   * Slice or pad bytes to exact length by filling 0s at the start
+   * @example sliceOrPadStart([1,2,3,4], 2) = [3,4]
+   * @example sliceOrPadStart([1,2,3,4], 6) = [0,0,1,2,3,4]
+   * @param bytes 
+   * @param length 
+   * @returns 
+   */
+  export function trySliceOrPadStart<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesAllocError<N>> {
+    if (bytes.length >= length) {
+      const slice = bytes.slice(bytes.length - length, bytes.length)
+      return new Ok(fromView(slice) as Bytes<N>)
+    }
+
+    const result = Bytes.tryAlloc(length)
+    result.inspectSync(result => result.set(bytes, length - bytes.length))
     return result
   }
 
@@ -325,7 +346,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function padStart(bytes: Bytes, length: number): Bytes {
+  export function padStart<X extends number, N extends number>(bytes: Bytes<X>, length: N): Bytes<X> | Bytes<N> {
     if (bytes.length >= length)
       return bytes
 
@@ -343,7 +364,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryPadStart(bytes: Bytes, length: number): Result<Bytes, BytesAllocError> {
+  export function tryPadStart<X extends number, N extends number>(bytes: Bytes<X>, length: N): Result<Bytes<X> | Bytes<N>, BytesAllocError<N>> {
     if (bytes.length >= length)
       return new Ok(bytes)
 
