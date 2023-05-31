@@ -6,18 +6,31 @@ const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
 export type BytesError =
+  | BytesAllocError
   | BytesCastError
+
+export class BytesAllocError<N extends number = number> extends Error {
+  readonly #class = BytesAllocError
+  readonly name = this.#class.name
+
+  constructor(
+    readonly length: N
+  ) {
+    super(`Could not allocate ${length}-sized bytes`)
+  }
+
+}
 
 export class BytesCastError<N extends number = number> extends Error {
   readonly #class = BytesCastError
   readonly name = this.#class.name
 
   constructor(
-    readonly bytes: Bytes,
     readonly length: N
   ) {
-    super(`Could not cast ${bytes.length}-sized bytes into ${length}-sized bytes`)
+    super(`Could not cast bytes into ${length}-sized bytes`)
   }
+
 }
 
 export type Bytes<N extends number = number> = Uint8Array & { length: N }
@@ -26,14 +39,20 @@ export namespace Bytes {
 
   /**
    * Alloc 0-lengthed Bytes using standard constructor
+   * @deprecated
    * @returns `Bytes[]`
    */
   export function empty(): Bytes<0> {
     return alloc(0)
   }
 
+  export function tryEmpty(): Result<Bytes<0>, BytesAllocError> {
+    return tryAlloc(0)
+  }
+
   /**
    * Alloc Bytes with typed length using standard constructor
+   * @deprecated
    * @param length 
    * @returns `Bytes[0;N]`
    */
@@ -42,12 +61,39 @@ export namespace Bytes {
   }
 
   /**
+   * Alloc Bytes with typed length using standard constructor
+   * @param length 
+   * @returns `Bytes[0;N]`
+   */
+  export function tryAlloc<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+    try {
+      return new Ok(new Uint8Array(length) as Bytes<N>)
+    } catch (e: unknown) {
+      return new Err(new BytesAllocError(length))
+    }
+  }
+
+  /**
    * Alloc Bytes with typed length using Buffer.allocUnsafe
+   * @deprecated
    * @param length 
    * @returns `Bytes[number;N]`
    */
   export function allocUnsafe<N extends number>(length: N): Bytes<N> {
     return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
+  }
+
+  /**
+   * Alloc Bytes with typed length using Buffer.allocUnsafe
+   * @param length 
+   * @returns `Bytes[number;N]`
+   */
+  export function tryAllocUnsafe<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+    try {
+      return new Ok(fromView(Buffer.allocUnsafe(length)) as Bytes<N>)
+    } catch (e: unknown) {
+      return new Err(new BytesAllocError(length))
+    }
   }
 
   /**
@@ -61,6 +107,7 @@ export namespace Bytes {
 
   /**
    * Alloc Bytes with typed length using Buffer.allocUnsafe and fill it with WebCrypto's CSPRNG
+   * @deprecated
    * @param length 
    * @returns `Bytes[number;N]`
    */
@@ -68,6 +115,17 @@ export namespace Bytes {
     const bytes = allocUnsafe(length)
     crypto.getRandomValues(bytes)
     return bytes
+  }
+
+  /**
+   * Alloc Bytes with typed length using Buffer.allocUnsafe and fill it with WebCrypto's CSPRNG
+   * @param length 
+   * @returns `Bytes[number;N]`
+   */
+  export function tryRandom<N extends number>(length: N): Result<Bytes<N>, BytesAllocError> {
+    const result = tryAllocUnsafe(length)
+    result.inspectSync(bytes => crypto.getRandomValues(bytes))
+    return result
   }
 
   /**
@@ -109,7 +167,7 @@ export namespace Bytes {
   export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError<N>> {
     if (Bytes.is(bytes, length))
       return new Ok(bytes)
-    return new Err(new BytesCastError(bytes, length))
+    return new Err(new BytesCastError(length))
   }
 
   /**
@@ -260,6 +318,7 @@ export namespace Bytes {
 
   /**
    * Pad bytes to minimum length by filling 0s at the start
+   * @deprecated
    * @example padStart([1,2,3,4], 2) = [1,2,3,4]
    * @example padStart([1,2,3,4], 6) = [0,0,1,2,3,4]
    * @param bytes 
@@ -273,6 +332,23 @@ export namespace Bytes {
     const result = Bytes.alloc(length)
     result.set(bytes, length - bytes.length)
 
+    return result
+  }
+
+  /**
+   * Pad bytes to minimum length by filling 0s at the start
+   * @example padStart([1,2,3,4], 2) = [1,2,3,4]
+   * @example padStart([1,2,3,4], 6) = [0,0,1,2,3,4]
+   * @param bytes 
+   * @param length 
+   * @returns 
+   */
+  export function tryPadStart(bytes: Bytes, length: number): Result<Bytes, BytesAllocError> {
+    if (bytes.length >= length)
+      return new Ok(bytes)
+
+    const result = Bytes.tryAlloc(length)
+    result.inspectSync(result => result.set(bytes, length - bytes.length))
     return result
   }
 
