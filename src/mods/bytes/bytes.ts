@@ -46,6 +46,10 @@ export namespace Bytes {
     return alloc(0)
   }
 
+  /**
+   * Alloc 0-lengthed Bytes using standard constructor
+   * @returns `Bytes[]`
+   */
   export function tryEmpty(): Result<Bytes<0>, BytesAllocError<0>> {
     return tryAlloc(0)
   }
