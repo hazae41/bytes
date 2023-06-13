@@ -26,9 +26,10 @@ export class BytesCastError<N extends number = number> extends Error {
   readonly name = this.#class.name
 
   constructor(
-    readonly length: N
+    readonly actualLength: number,
+    readonly expectedLength: N
   ) {
-    super(`Could not cast bytes into ${length}-sized bytes`)
+    super(`Could not cast ${actualLength} bytes into ${expectedLength}-sized bytes`)
   }
 
 }
@@ -185,7 +186,7 @@ export namespace Bytes {
   export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError<N>> {
     if (Bytes.is(bytes, length))
       return new Ok(bytes)
-    return new Err(new BytesCastError(length))
+    return new Err(new BytesCastError(bytes.length, length))
   }
 
   /**
