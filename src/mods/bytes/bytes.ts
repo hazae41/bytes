@@ -7,7 +7,18 @@ const decoder = new TextDecoder()
 
 export type BytesError =
   | BytesAllocError
+  | BytesFromError
   | BytesCastError
+
+export class BytesFromError extends Error {
+  readonly #class = BytesFromError
+  readonly name = this.#class.name
+
+  constructor() {
+    super(`Could not convert to bytes`)
+  }
+
+}
 
 export class BytesAllocError<N extends number = number> extends Error {
   readonly #class = BytesAllocError
@@ -102,12 +113,35 @@ export namespace Bytes {
   }
 
   /**
+   * Create bytes from array
+   * @deprecated
+   * @param array 
+   * @returns `Bytes[number;N]`
+   */
+  export function from(array: ArrayBufferLike | ArrayLike<number>): Bytes {
+    return new Uint8Array(array)
+  }
+
+  /**
+   * Create bytes from array
+   * @param array 
+   * @returns `Bytes[number;N]`
+   */
+  export function tryFrom(array: ArrayBufferLike | ArrayLike<number>): Result<Bytes, BytesFromError> {
+    try {
+      return new Ok(new Uint8Array(array))
+    } catch (e: unknown) {
+      return new Err(new BytesFromError())
+    }
+  }
+
+  /**
    * Create bytes from sized of length N
    * @deprecated
    * @param sized 
    * @returns `Bytes[number;N]`
    */
-  export function from<N extends number>(sized: Sized<number, N>): Bytes<N> {
+  export function fromSized<N extends number>(sized: Sized<number, N>): Bytes<N> {
     return new Uint8Array(sized) as Bytes<N>
   }
 
@@ -116,7 +150,7 @@ export namespace Bytes {
    * @param sized 
    * @returns `Bytes[number;N]`
    */
-  export function tryFrom<N extends number>(sized: Sized<number, N>): Result<Bytes<N>, BytesAllocError<N>> {
+  export function tryFromSized<N extends number>(sized: Sized<number, N>): Result<Bytes<N>, BytesAllocError<N>> {
     try {
       return new Ok(new Uint8Array(sized) as Bytes<N>)
     } catch (e: unknown) {
@@ -164,6 +198,8 @@ export namespace Bytes {
    * @returns 
    */
   export function equals<N extends number, M extends N>(a: Bytes<N>, b: Bytes<M>): a is Bytes<M> {
+    if ("indexedDB" in globalThis)
+      return indexedDB.cmp(a, b) === 0
     return Buffers.fromView(a).equals(Buffers.fromView(b))
   }
 
@@ -174,6 +210,8 @@ export namespace Bytes {
    * @returns 
    */
   export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
+    if ("indexedDB" in globalThis)
+      return indexedDB.cmp(a, b) === 0
     return Buffers.fromView(a).equals(Buffers.fromView(b))
   }
 
@@ -195,7 +233,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryCastFrom<N extends number>(array: ArrayLike<number>, length: N): Result<Bytes<N>, BytesCastError<N>> {
+  export function tryCastFrom<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N): Result<Bytes<N>, BytesCastError<N>> {
     return tryCast(new Uint8Array(array), length)
   }
 
