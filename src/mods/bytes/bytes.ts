@@ -357,6 +357,7 @@ export namespace Bytes {
 
   /**
    * Slice or pad bytes to exact length by filling 0s at the start
+   * @deprecated
    * @example sliceOrPadStart([1,2,3,4], 2) = [3,4]
    * @example sliceOrPadStart([1,2,3,4], 6) = [0,0,1,2,3,4]
    * @param bytes 
@@ -436,7 +437,7 @@ export namespace Bytes {
    * @returns 
    */
   export function concat(list: Bytes[]) {
-    return fromView(Buffer.concat(list))
+    return Bytes.fromView(Buffer.concat(list))
   }
 
 
