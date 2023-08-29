@@ -1,9 +1,7 @@
 import { Err, Ok, Result } from "@hazae41/result"
 import { Buffers } from "libs/buffers/buffers.js"
+import { Utf8 } from "libs/utf8/utf8.js"
 import { Sized } from "../sized/sized.js"
-
-const encoder = new TextEncoder()
-const decoder = new TextDecoder()
 
 export type BytesError =
   | BytesAllocError
@@ -262,7 +260,7 @@ export namespace Bytes {
    * @returns 
    */
   export function fromUtf8(text: string): Bytes {
-    return encoder.encode(text)
+    return Utf8.encoder.encode(text)
   }
 
   /**
@@ -271,7 +269,7 @@ export namespace Bytes {
    * @returns 
    */
   export function toUtf8(bytes: Bytes): string {
-    return decoder.decode(bytes)
+    return Utf8.decoder.decode(bytes)
   }
 
   /**
