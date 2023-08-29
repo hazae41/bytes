@@ -222,7 +222,7 @@ export namespace Bytes {
    * @returns 
    */
   export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError<N>> {
-    if (Bytes.is(bytes, length))
+    if (is(bytes, length))
       return new Ok(bytes)
     return new Err(new BytesCastError(bytes.length, length))
   }
@@ -370,7 +370,7 @@ export namespace Bytes {
       return fromView(slice) as Bytes<N>
     }
 
-    const result = Bytes.alloc(length)
+    const result = alloc(length)
     result.set(bytes, length - bytes.length)
 
     return result
@@ -390,7 +390,7 @@ export namespace Bytes {
       return new Ok(fromView(slice) as Bytes<N>)
     }
 
-    const result = Bytes.tryAlloc(length)
+    const result = tryAlloc(length)
     result.inspectSync(result => result.set(bytes, length - bytes.length))
     return result
   }
@@ -408,7 +408,7 @@ export namespace Bytes {
     if (bytes.length >= length)
       return bytes
 
-    const result = Bytes.alloc(length)
+    const result = alloc(length)
     result.set(bytes, length - bytes.length)
 
     return result
@@ -426,7 +426,7 @@ export namespace Bytes {
     if (bytes.length >= length)
       return new Ok(bytes)
 
-    const result = Bytes.tryAlloc(length)
+    const result = tryAlloc(length)
     result.inspectSync(result => result.set(bytes, length - bytes.length))
     return result
   }
@@ -437,7 +437,7 @@ export namespace Bytes {
    * @returns 
    */
   export function concat(list: Bytes[]) {
-    return Bytes.fromView(Buffer.concat(list))
+    return fromView(Buffer.concat(list))
   }
 
 
