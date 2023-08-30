@@ -1,4 +1,5 @@
 import { Err, Ok, Result } from "@hazae41/result"
+import { Base64 } from "libs/base64/base64.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
 import { Sized } from "../sized/sized.js"
@@ -299,12 +300,40 @@ export namespace Bytes {
     return Buffers.fromView(bytes).toString("hex")
   }
 
+  export async function fromBase64(text: string) {
+    if ("process" in globalThis)
+      return fromView(Buffer.from(text, "base64"))
+    if ("fetch" in globalThis)
+      return await Base64.decode(text)
+    return fromBase64Sync(text)
+  }
+
+  export async function tryFromBase64(text: string) {
+    if ("process" in globalThis)
+      return new Ok(fromView(Buffer.from(text, "base64")))
+    if ("fetch" in globalThis)
+      return await Base64.tryDecode(text)
+    return new Ok(fromBase64Sync(text))
+  }
+
+  export async function toBase64(bytes: Bytes) {
+    if ("process" in globalThis)
+      return Buffers.fromView(bytes).toString("base64")
+    return await Base64.encode(bytes)
+  }
+
+  export async function tryToBase64(bytes: Bytes) {
+    if ("process" in globalThis)
+      return new Ok(Buffers.fromView(bytes).toString("base64"))
+    return await Base64.tryEncode(bytes)
+  }
+
   /**
    * Base64 decoding using Buffer.from
    * @param text 
    * @returns 
    */
-  export function fromBase64(text: string): Bytes {
+  export function fromBase64Sync(text: string): Bytes {
     return fromView(Buffer.from(text, "base64"))
   }
 
@@ -313,7 +342,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toBase64(bytes: Bytes): string {
+  export function toBase64Sync(bytes: Bytes): string {
     return Buffers.fromView(bytes).toString("base64")
   }
 
