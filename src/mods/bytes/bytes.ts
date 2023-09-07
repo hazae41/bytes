@@ -1,5 +1,5 @@
-import { Err, Ok, Result } from "@hazae41/result"
-import { Base64 } from "libs/base64/base64.js"
+import { Err, Ok, Panic, Result } from "@hazae41/result"
+import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
 import { Sized } from "../sized/sized.js"
@@ -89,23 +89,27 @@ export namespace Bytes {
   }
 
   /**
-   * Alloc Bytes with typed length using Buffer.allocUnsafe
+   * Alloc Bytes with typed length (using Buffer.allocUnsafe on Node, Uint8Array on others)
    * @deprecated
    * @param length 
    * @returns `Bytes[number;N]`
    */
   export function allocUnsafe<N extends number>(length: N): Bytes<N> {
-    return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
+    if ("process" in globalThis)
+      return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
+    return new Uint8Array(length) as Bytes<N>
   }
 
   /**
-   * Alloc Bytes with typed length using Buffer.allocUnsafe
+   * Alloc Bytes with typed length (using Buffer.allocUnsafe on Node, Uint8Array on others)
    * @param length 
    * @returns `Bytes[number;N]`
    */
   export function tryAllocUnsafe<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
     try {
-      return new Ok(fromView(Buffer.allocUnsafe(length)) as Bytes<N>)
+      if ("process" in globalThis)
+        return new Ok(fromView(Buffer.allocUnsafe(length)) as Bytes<N>)
+      return new Ok(new Uint8Array(length) as Bytes<N>)
     } catch (e: unknown) {
       return new Err(new BytesAllocError(length))
     }
@@ -158,7 +162,7 @@ export namespace Bytes {
   }
 
   /**
-   * Alloc Bytes with typed length using Buffer.allocUnsafe and fill it with WebCrypto's CSPRNG
+   * Alloc Bytes with typed length (using Bytes.allocUnsafe) and fill it with WebCrypto's CSPRNG
    * @deprecated
    * @param length 
    * @returns `Bytes[number;N]`
@@ -170,7 +174,7 @@ export namespace Bytes {
   }
 
   /**
-   * Alloc Bytes with typed length using Buffer.allocUnsafe and fill it with WebCrypto's CSPRNG
+   * Alloc Bytes with typed length (using Bytes.allocUnsafe) and fill it with WebCrypto's CSPRNG
    * @param length 
    * @returns `Bytes[number;N]`
    */
@@ -191,7 +195,7 @@ export namespace Bytes {
   }
 
   /**
-   * Equality check using Buffer.equals
+   * Equality check (using indexedDB.cmp on browsers, Buffer.equals on Node)
    * @param a 
    * @param b 
    * @returns 
@@ -199,11 +203,13 @@ export namespace Bytes {
   export function equals<N extends number, M extends N>(a: Bytes<N>, b: Bytes<M>): a is Bytes<M> {
     if ("indexedDB" in globalThis)
       return indexedDB.cmp(a, b) === 0
-    return Buffers.fromView(a).equals(Buffers.fromView(b))
+    if ("process" in globalThis)
+      return Buffers.fromView(a).equals(Buffers.fromView(b))
+    throw new Panic(`Can't compare bytes`)
   }
 
   /**
-   * Equality check using Buffer.equals
+   * Equality check (using indexedDB.cmp on browsers, Buffer.equals on Node)
    * @param a 
    * @param b 
    * @returns 
@@ -211,7 +217,9 @@ export namespace Bytes {
   export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
     if ("indexedDB" in globalThis)
       return indexedDB.cmp(a, b) === 0
-    return Buffers.fromView(a).equals(Buffers.fromView(b))
+    if ("process" in globalThis)
+      return Buffers.fromView(a).equals(Buffers.fromView(b))
+    throw new Panic(`Can't compare bytes`)
   }
 
   /**
@@ -256,7 +264,7 @@ export namespace Bytes {
   }
 
   /**
-   * Utf8 encoding using standard encoder
+   * Utf8 encoding using TextEncoder
    * @param text 
    * @returns 
    */
@@ -265,7 +273,7 @@ export namespace Bytes {
   }
 
   /**
-   * Utf8 decoding using standard decoder
+   * Utf8 decoding using TextDecoder
    * @param text 
    * @returns 
    */
@@ -274,112 +282,25 @@ export namespace Bytes {
   }
 
   /**
-   * https://github.com/nodejs/node/issues/24491
-   * @param text 
-   * @returns 
-   */
-  export function fromHexSafe(text: string): Bytes {
-    return fromHex((text.length % 2) ? `0${text}` : text)
-  }
-
-  /**
-   * Hex decoding using Buffer.from
-   * @param text 
-   * @returns 
-   */
-  export function fromHex(text: string): Bytes {
-    return fromView(Buffer.from(text, "hex"))
-  }
-
-  /**
-   * Hex encoding using Buffer.toString
-   * @param bytes 
-   * @returns 
-   */
-  export function toHex(bytes: Bytes): string {
-    return Buffers.fromView(bytes).toString("hex")
-  }
-
-  export async function fromBase64(text: string) {
-    if ("process" in globalThis)
-      return fromView(Buffer.from(text, "base64"))
-    if ("fetch" in globalThis)
-      return await Base64.decode(text)
-    return fromBase64Sync(text)
-  }
-
-  export async function tryFromBase64(text: string) {
-    if ("process" in globalThis)
-      return new Ok(fromView(Buffer.from(text, "base64")))
-    if ("fetch" in globalThis)
-      return await Base64.tryDecode(text)
-    return new Ok(fromBase64Sync(text))
-  }
-
-  export async function toBase64(bytes: Bytes) {
-    if ("process" in globalThis)
-      return Buffers.fromView(bytes).toString("base64")
-    return await Base64.encode(bytes)
-  }
-
-  export async function tryToBase64(bytes: Bytes) {
-    if ("process" in globalThis)
-      return new Ok(Buffers.fromView(bytes).toString("base64"))
-    return await Base64.tryEncode(bytes)
-  }
-
-  /**
-   * Base64 decoding using Buffer.from
-   * @param text 
-   * @returns 
-   */
-  export function fromBase64Sync(text: string): Bytes {
-    return fromView(Buffer.from(text, "base64"))
-  }
-
-  /**
-   * Base64 encoding using Buffer.toString
-   * @param bytes 
-   * @returns 
-   */
-  export function toBase64Sync(bytes: Bytes): string {
-    return Buffers.fromView(bytes).toString("base64")
-  }
-
-  /**
-   * Ascii decoding using Buffer.from
+   * Ascii decoding (using Buffer.from on Node, TextEncoder on others)
    * @param bytes 
    * @returns 
    */
   export function fromAscii(text: string): Bytes {
-    return fromView(Buffer.from(text, "ascii"))
+    if ("process" in globalThis)
+      return fromView(Buffer.from(text, "ascii"))
+    return Ascii.encoder.encode(text)
   }
 
   /**
-   * Ascii encoding using Buffer.toString
+   * Ascii encoding (using Buffer.toString on Node, TextDecoder on others)
    * @param bytes 
    * @returns 
    */
   export function toAscii(bytes: Bytes): string {
-    return Buffers.fromView(bytes).toString("ascii")
-  }
-
-  /**
-   * BigInt decoding using fromHexSafe
-   * @param bigint 
-   * @returns 
-   */
-  export function fromBigInt(bigint: bigint): Bytes {
-    return fromHexSafe(bigint.toString(16))
-  }
-
-  /**
-   * BigInt encoding using toHex
-   * @param bytes 
-   * @returns 
-   */
-  export function toBigInt(bytes: Bytes): bigint {
-    return BigInt(`0x${toHex(bytes)}`)
+    if ("process" in globalThis)
+      return Buffers.fromView(bytes).toString("ascii")
+    return Ascii.decoder.decode(bytes)
   }
 
   /**
@@ -397,10 +318,9 @@ export namespace Bytes {
       return fromView(slice) as Bytes<N>
     }
 
-    const result = alloc(length)
-    result.set(bytes, length - bytes.length)
-
-    return result
+    const array = alloc(length)
+    array.set(bytes, length - bytes.length)
+    return array
   }
 
   /**
@@ -418,7 +338,7 @@ export namespace Bytes {
     }
 
     const result = tryAlloc(length)
-    result.inspectSync(result => result.set(bytes, length - bytes.length))
+    result.inspectSync(a => a.set(bytes, length - bytes.length))
     return result
   }
 
@@ -435,10 +355,9 @@ export namespace Bytes {
     if (bytes.length >= length)
       return bytes
 
-    const result = alloc(length)
-    result.set(bytes, length - bytes.length)
-
-    return result
+    const array = alloc(length)
+    array.set(bytes, length - bytes.length)
+    return array
   }
 
   /**
@@ -453,19 +372,29 @@ export namespace Bytes {
     if (bytes.length >= length)
       return new Ok(bytes)
 
-    const result = tryAlloc(length)
-    result.inspectSync(result => result.set(bytes, length - bytes.length))
+    const result = tryAlloc(length).inspectSync(r => r.set(bytes, length - bytes.length))
+    result.inspectSync(a => a.set(bytes, length - bytes.length))
     return result
   }
 
   /**
-   * Concatenation using Buffer.concat
+   * Concatenation (using Buffer.concat on Node, home-made on others)
    * @param list 
    * @returns 
    */
   export function concat(list: Bytes[]) {
-    return fromView(Buffer.concat(list))
-  }
+    if ("process" in globalThis)
+      return fromView(Buffer.concat(list))
 
+    const length = list.reduce((p, c) => p + c.length, 0)
+    const result = allocUnsafe(length)
+
+    let offset = 0
+
+    for (const bytes of list) {
+      result.set(bytes, offset)
+      offset += bytes.length
+    }
+  }
 
 }
