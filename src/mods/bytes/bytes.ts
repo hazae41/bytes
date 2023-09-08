@@ -395,6 +395,8 @@ export namespace Bytes {
       result.set(bytes, offset)
       offset += bytes.length
     }
+
+    return result
   }
 
 }
