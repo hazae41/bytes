@@ -205,7 +205,7 @@ export namespace Bytes {
       return indexedDB.cmp(a, b) === 0
     if ("process" in globalThis)
       return Buffers.fromView(a).equals(Buffers.fromView(b))
-    throw new Panic(`Can't compare bytes`)
+    throw Panic.from(new Error(`Can't compare bytes`))
   }
 
   /**
@@ -219,7 +219,7 @@ export namespace Bytes {
       return indexedDB.cmp(a, b) === 0
     if ("process" in globalThis)
       return Buffers.fromView(a).equals(Buffers.fromView(b))
-    throw new Panic(`Can't compare bytes`)
+    throw Panic.from(new Error(`Can't compare bytes`))
   }
 
   /**
