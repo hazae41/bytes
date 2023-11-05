@@ -1,35 +1,9 @@
+import { Base16 } from "@hazae41/base16"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
 import { Sized } from "../sized/sized.js"
-
-export type BytesError =
-  | BytesAllocError
-  | BytesFromError
-  | BytesCastError
-
-export class BytesFromError extends Error {
-  readonly #class = BytesFromError
-  readonly name = this.#class.name
-
-  constructor() {
-    super(`Could not convert to bytes`)
-  }
-
-}
-
-export class BytesAllocError<N extends number = number> extends Error {
-  readonly #class = BytesAllocError
-  readonly name = this.#class.name
-
-  constructor(
-    readonly length: N
-  ) {
-    super(`Could not allocate ${length}-sized bytes`)
-  }
-
-}
 
 export class BytesCastError<N extends number = number> extends Error {
   readonly #class = BytesCastError
@@ -50,24 +24,14 @@ export namespace Bytes {
 
   /**
    * Alloc 0-lengthed Bytes using standard constructor
-   * @deprecated
-   * @returns `Bytes[]`
+   * @returns `Bytes<[]>`
    */
   export function empty(): Bytes<0> {
     return alloc(0)
   }
 
   /**
-   * Alloc 0-lengthed Bytes using standard constructor
-   * @returns `Bytes[]`
-   */
-  export function tryEmpty(): Result<Bytes<0>, BytesAllocError<0>> {
-    return tryAlloc(0)
-  }
-
-  /**
    * Alloc Bytes with typed length using standard constructor
-   * @deprecated
    * @param length 
    * @returns `Bytes[0;N]`
    */
@@ -76,112 +40,27 @@ export namespace Bytes {
   }
 
   /**
-   * Alloc Bytes with typed length using standard constructor
-   * @param length 
-   * @returns `Bytes[0;N]`
-   */
-  export function tryAlloc<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
-    try {
-      return new Ok(new Uint8Array(length) as Bytes<N>)
-    } catch (e: unknown) {
-      return new Err(new BytesAllocError(length))
-    }
-  }
-
-  /**
-   * Alloc Bytes with typed length (using Buffer.allocUnsafe on Node, Uint8Array on others)
-   * @deprecated
-   * @param length 
-   * @returns `Bytes[number;N]`
-   */
-  export function allocUnsafe<N extends number>(length: N): Bytes<N> {
-    if ("process" in globalThis)
-      return fromView(Buffer.allocUnsafe(length)) as Bytes<N>
-    return new Uint8Array(length) as Bytes<N>
-  }
-
-  /**
-   * Alloc Bytes with typed length (using Buffer.allocUnsafe on Node, Uint8Array on others)
-   * @param length 
-   * @returns `Bytes[number;N]`
-   */
-  export function tryAllocUnsafe<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
-    try {
-      if ("process" in globalThis)
-        return new Ok(fromView(Buffer.allocUnsafe(length)) as Bytes<N>)
-      return new Ok(new Uint8Array(length) as Bytes<N>)
-    } catch (e: unknown) {
-      return new Err(new BytesAllocError(length))
-    }
-  }
-
-  /**
    * Create bytes from array
-   * @deprecated
    * @param array 
    * @returns `Bytes[number;N]`
    */
+  export function from<N extends number>(sized: Sized<number, N>): Bytes<N>;
+
+  export function from(array: ArrayBufferLike | ArrayLike<number>): Bytes;
+
   export function from(array: ArrayBufferLike | ArrayLike<number>): Bytes {
     return new Uint8Array(array)
   }
 
   /**
-   * Create bytes from array
-   * @param array 
-   * @returns `Bytes[number;N]`
-   */
-  export function tryFrom(array: ArrayBufferLike | ArrayLike<number>): Result<Bytes, BytesFromError> {
-    try {
-      return new Ok(new Uint8Array(array))
-    } catch (e: unknown) {
-      return new Err(new BytesFromError())
-    }
-  }
-
-  /**
-   * Create bytes from sized of length N
-   * @deprecated
-   * @param sized 
-   * @returns `Bytes[number;N]`
-   */
-  export function fromSized<N extends number>(sized: Sized<number, N>): Bytes<N> {
-    return new Uint8Array(sized) as Bytes<N>
-  }
-
-  /**
-   * Create bytes from sized of length N
-   * @param sized 
-   * @returns `Bytes[number;N]`
-   */
-  export function tryFromSized<N extends number>(sized: Sized<number, N>): Result<Bytes<N>, BytesAllocError<N>> {
-    try {
-      return new Ok(new Uint8Array(sized) as Bytes<N>)
-    } catch (e: unknown) {
-      return new Err(new BytesAllocError(sized.length))
-    }
-  }
-
-  /**
    * Alloc Bytes with typed length (using Bytes.allocUnsafe) and fill it with WebCrypto's CSPRNG
-   * @deprecated
    * @param length 
    * @returns `Bytes[number;N]`
    */
   export function random<N extends number>(length: N): Bytes<N> {
-    const bytes = allocUnsafe(length)
+    const bytes = alloc(length)
     crypto.getRandomValues(bytes)
     return bytes
-  }
-
-  /**
-   * Alloc Bytes with typed length (using Bytes.allocUnsafe) and fill it with WebCrypto's CSPRNG
-   * @param length 
-   * @returns `Bytes[number;N]`
-   */
-  export function tryRandom<N extends number>(length: N): Result<Bytes<N>, BytesAllocError<N>> {
-    const result = tryAllocUnsafe(length)
-    result.inspectSync(bytes => crypto.getRandomValues(bytes))
-    return result
   }
 
   /**
@@ -215,11 +94,7 @@ export namespace Bytes {
    * @returns 
    */
   export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
-    if ("indexedDB" in globalThis)
-      return indexedDB.cmp(a, b) === 0
-    if ("process" in globalThis)
-      return Buffers.fromView(a).equals(Buffers.fromView(b))
-    throw Panic.from(new Error(`Can't compare bytes`))
+    return equals(b, a)
   }
 
   /**
@@ -228,20 +103,42 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError<N>> {
+  export function castOrThrow<N extends number>(bytes: Bytes, length: N): Bytes<N> {
+    if (is(bytes, length))
+      return bytes
+    throw new BytesCastError(bytes.length, length)
+  }
+
+  /**
+   * Try to cast bytes of N length into Bytes<N>
+   * @param view 
+   * @param length 
+   * @returns 
+   */
+  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError> {
     if (is(bytes, length))
       return new Ok(bytes)
     return new Err(new BytesCastError(bytes.length, length))
   }
 
   /**
-   * Try to cast bytes of N length into Bytes<N>
-   * @param view 
+   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Bytes<N>
+   * @param array 
    * @param length 
    * @returns 
    */
-  export function tryCastFrom<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N): Result<Bytes<N>, BytesCastError<N>> {
-    return tryCast(new Uint8Array(array), length)
+  export function fromAndCastOrThrow<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N) {
+    return castOrThrow(from(array), length)
+  }
+
+  /**
+   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Bytes<N>
+   * @param array 
+   * @param length 
+   * @returns 
+   */
+  export function tryFromAndCast<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N) {
+    return tryCast(from(array), length)
   }
 
   /**
@@ -250,12 +147,22 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function tryCastFromView<N extends number>(view: ArrayBufferView, length: N): Result<Bytes<N>, BytesCastError<N>> {
+  export function fromViewAndCastOrThrow<N extends number>(view: ArrayBufferView, length: N) {
+    return castOrThrow(fromView(view), length)
+  }
+
+  /**
+   * Zero-copy conversion from ArrayBufferView of N length into Bytes<N>
+   * @param view 
+   * @param length 
+   * @returns 
+   */
+  export function tryFromViewAndCast<N extends number>(view: ArrayBufferView, length: N) {
     return tryCast(fromView(view), length)
   }
 
   /**
-   * Zero-copy conversion from ArrayBufferView into unknown-sized Bytes
+   * Zero-copy conversion from ArrayBufferView into Bytes
    * @param view 
    * @returns 
    */
@@ -303,9 +210,20 @@ export namespace Bytes {
     return Ascii.decoder.decode(bytes)
   }
 
+  export function toHex(bytes: Bytes) {
+    return Base16.get().encodeOrThrow(bytes)
+  }
+
+  export function fromHexPadStart(text: string) {
+    return Base16.get().padStartAndDecodeOrThrow(text)
+  }
+
+  export function fromHexPadEnd(text: string) {
+    return Base16.get().padEndAndDecodeOrThrow(text)
+  }
+
   /**
    * Slice or pad bytes to exact length by filling 0s at the start
-   * @deprecated
    * @example sliceOrPadStart([1,2,3,4], 2) = [3,4]
    * @example sliceOrPadStart([1,2,3,4], 6) = [0,0,1,2,3,4]
    * @param bytes 
@@ -321,25 +239,6 @@ export namespace Bytes {
     const array = alloc(length)
     array.set(bytes, length - bytes.length)
     return array
-  }
-
-  /**
-   * Slice or pad bytes to exact length by filling 0s at the start
-   * @example sliceOrPadStart([1,2,3,4], 2) = [3,4]
-   * @example sliceOrPadStart([1,2,3,4], 6) = [0,0,1,2,3,4]
-   * @param bytes 
-   * @param length 
-   * @returns 
-   */
-  export function trySliceOrPadStart<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesAllocError<N>> {
-    if (bytes.length >= length) {
-      const slice = bytes.slice(bytes.length - length, bytes.length)
-      return new Ok(fromView(slice) as Bytes<N>)
-    }
-
-    const result = tryAlloc(length)
-    result.inspectSync(a => a.set(bytes, length - bytes.length))
-    return result
   }
 
   /**
@@ -361,23 +260,6 @@ export namespace Bytes {
   }
 
   /**
-   * Pad bytes to minimum length by filling 0s at the start
-   * @example padStart([1,2,3,4], 2) = [1,2,3,4]
-   * @example padStart([1,2,3,4], 6) = [0,0,1,2,3,4]
-   * @param bytes 
-   * @param length 
-   * @returns 
-   */
-  export function tryPadStart<X extends number, N extends number>(bytes: Bytes<X>, length: N): Result<Bytes<X> | Bytes<N>, BytesAllocError<N>> {
-    if (bytes.length >= length)
-      return new Ok(bytes)
-
-    const result = tryAlloc(length).inspectSync(r => r.set(bytes, length - bytes.length))
-    result.inspectSync(a => a.set(bytes, length - bytes.length))
-    return result
-  }
-
-  /**
    * Concatenation (using Buffer.concat on Node, home-made on others)
    * @param list 
    * @returns 
@@ -387,7 +269,7 @@ export namespace Bytes {
       return fromView(Buffer.concat(list))
 
     const length = list.reduce((p, c) => p + c.length, 0)
-    const result = allocUnsafe(length)
+    const result = alloc(length)
 
     let offset = 0
 

@@ -27,8 +27,8 @@ function doNotRun() {
   else
     bytes8 // Bytes<8>
 
-  Bytes.tryCastFromView(bytesX, 16).unwrap() // Bytes<16>
-  Bytes.tryCastFromView(bytes8, 16).unwrap() // Bytes<16>
+  Bytes.fromViewAndCastOrThrow(bytesX, 16) // Bytes<16>
+  Bytes.fromViewAndCastOrThrow(bytes8, 16) // Bytes<16>
 
   function test(sized: Sized<number, 8>) {
     sized.length // 8
@@ -44,20 +44,20 @@ await test("padStart", async ({ message }) => {
   const identity = Bytes.padStart(bytes, 2)
   const padded = Bytes.padStart(bytes, 6)
 
-  assert(Bytes.equals(identity, Bytes.fromSized(Sized.cast([1, 2, 3, 4], 4).unwrap())))
-  assert(Bytes.equals(padded, Bytes.fromSized(Sized.cast([0, 0, 1, 2, 3, 4], 6).unwrap())))
+  assert(Bytes.equals(identity, Bytes.from(Sized.cast([1, 2, 3, 4], 4).unwrap())))
+  assert(Bytes.equals(padded, Bytes.from(Sized.cast([0, 0, 1, 2, 3, 4], 6).unwrap())))
 
   console.log(message)
 })
 
 await test("sliceOrPadStart", async ({ message }) => {
-  const bytes = Bytes.fromSized(Sized.cast([1, 2, 3, 4], 4).unwrap())
+  const bytes = Bytes.from(Sized.cast([1, 2, 3, 4], 4).unwrap())
 
   const sliced = Bytes.sliceOrPadStart(bytes, 2)
   const padded = Bytes.sliceOrPadStart(bytes, 6)
 
-  assert(Bytes.equals(sliced, Bytes.fromSized(Sized.cast([3, 4], 2).unwrap())))
-  assert(Bytes.equals(padded, Bytes.fromSized(Sized.cast([0, 0, 1, 2, 3, 4], 6).unwrap())))
+  assert(Bytes.equals(sliced, Bytes.from(Sized.cast([3, 4], 2).unwrap())))
+  assert(Bytes.equals(padded, Bytes.from(Sized.cast([0, 0, 1, 2, 3, 4], 6).unwrap())))
 
   console.log(message)
 })
