@@ -214,12 +214,22 @@ export namespace Bytes {
     return Base16.get().encodeOrThrow(bytes)
   }
 
+  /**
+   * Pad start and decode from hex
+   * @param text 
+   * @returns 
+   */
   export function fromHexPadStart(text: string) {
-    return Base16.get().padStartAndDecodeOrThrow(text)
+    return Base16.get().padStartAndDecodeOrThrow(text).copyAndDispose()
   }
 
+  /**
+   * Pad end and decode from hex
+   * @param text 
+   * @returns 
+   */
   export function fromHexPadEnd(text: string) {
-    return Base16.get().padEndAndDecodeOrThrow(text)
+    return Base16.get().padEndAndDecodeOrThrow(text).copyAndDispose()
   }
 
   /**
