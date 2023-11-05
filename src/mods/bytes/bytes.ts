@@ -230,7 +230,6 @@ export namespace Bytes {
 
   /**
    * Pad bytes to minimum length by filling 0s at the start
-   * @deprecated
    * @example padStart([1,2,3,4], 2) = [1,2,3,4]
    * @example padStart([1,2,3,4], 6) = [0,0,1,2,3,4]
    * @param bytes 
