@@ -1,4 +1,3 @@
-import { Base16 } from "@hazae41/base16"
 import { Err, Ok, Panic, Result } from "@hazae41/result"
 import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
@@ -208,28 +207,6 @@ export namespace Bytes {
     if ("process" in globalThis)
       return Buffers.fromView(bytes).toString("ascii")
     return Ascii.decoder.decode(bytes)
-  }
-
-  export function toHex(bytes: Bytes) {
-    return Base16.get().encodeOrThrow(bytes)
-  }
-
-  /**
-   * Pad start and decode from hex
-   * @param text 
-   * @returns 
-   */
-  export function fromHexPadStart(text: string) {
-    return Base16.get().padStartAndDecodeOrThrow(text).copyAndDispose()
-  }
-
-  /**
-   * Pad end and decode from hex
-   * @param text 
-   * @returns 
-   */
-  export function fromHexPadEnd(text: string) {
-    return Base16.get().padEndAndDecodeOrThrow(text).copyAndDispose()
   }
 
   /**
