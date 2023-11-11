@@ -276,12 +276,17 @@ export namespace Bytes {
    * @returns index or -1
    */
   export function indexOf(bytes: Uint8Array, search: Uint8Array, start = 0): number {
-    const index = bytes.indexOf(search[0], start)
+    while (true) {
+      const index = bytes.indexOf(search[0], start)
 
-    if (equals(bytes.subarray(index, index + search.length), search))
-      return index
+      if (index === -1)
+        return -1
 
-    return -1
+      if (equals(bytes.subarray(index, index + search.length), search))
+        return index
+
+      start = index + 1
+    }
   }
 
 }

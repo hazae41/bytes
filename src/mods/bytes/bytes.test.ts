@@ -88,3 +88,11 @@ await test("indexof2", async ({ message }) => {
 
   console.log(message)
 })
+
+await test("indexof3", async ({ message }) => {
+  const bytes = Bytes.from([0, 1, 0, 2, 0, 3, 0, 4] as const)
+
+  assert(Bytes.indexOf(bytes, Bytes.from([0, 2] as const)) === 2)
+
+  console.log(message)
+})
