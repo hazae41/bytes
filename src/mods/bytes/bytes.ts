@@ -17,7 +17,8 @@ export class BytesCastError<N extends number = number> extends Error {
 
 }
 
-export type Bytes<N extends number = number> = Uint8Array & { length: N }
+export type Bytes<N extends number = number> =
+  | Uint8Array & { readonly length: N }
 
 export namespace Bytes {
 
@@ -265,6 +266,22 @@ export namespace Bytes {
     }
 
     return result
+  }
+
+  /**
+   * Search bytes in bytes
+   * @param bytes 
+   * @param search 
+   * @param start 
+   * @returns index or -1
+   */
+  export function indexOf(bytes: Uint8Array, search: Uint8Array, start = 0): number {
+    const index = bytes.indexOf(search[0], start)
+
+    if (equals(bytes.subarray(index, index + search.length), search))
+      return index
+
+    return -1
   }
 
 }
