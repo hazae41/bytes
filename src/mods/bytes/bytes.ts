@@ -17,59 +17,65 @@ export class BytesCastError<N extends number = number> extends Error {
 
 }
 
+export type Uint8Array<N extends number = number> =
+  | globalThis.Uint8Array & { readonly length: N }
+
+/**
+ * @deprecated
+ */
 export type Bytes<N extends number = number> =
-  | Uint8Array & { readonly length: N }
+  | globalThis.Uint8Array & { readonly length: N }
 
 export namespace Bytes {
 
   /**
-   * Alloc 0-lengthed Bytes using standard constructor
-   * @returns `Bytes<[]>`
+   * Alloc 0-lengthed bytes using standard constructor
+   * @returns `Uint8Array<[]>`
    */
-  export function empty(): Bytes<0> {
+  export function empty(): Uint8Array<0> {
     return alloc(0)
   }
 
   /**
-   * Alloc Bytes with typed length using standard constructor
+   * Alloc bytes with typed length using standard constructor
    * @param length 
-   * @returns `Bytes[0;N]`
+   * @returns `Uint8Array[0;N]`
    */
-  export function alloc<N extends number>(length: N): Bytes<N> {
-    return new Uint8Array(length) as Bytes<N>
+  export function alloc<N extends number>(length: N): Uint8Array<N> {
+    return new Uint8Array(length) as Uint8Array<N>
   }
 
   /**
    * Create bytes from array
    * @param array 
-   * @returns `Bytes[number;N]`
+   * @returns `Uint8Array[number;N]`
    */
-  export function from<N extends number>(sized: Sized<number, N>): Bytes<N>;
+  export function from<N extends number>(sized: Sized<number, N>): Uint8Array<N>;
 
-  export function from(array: ArrayBufferLike | ArrayLike<number>): Bytes;
+  export function from(array: ArrayBufferLike | ArrayLike<number>): Uint8Array;
 
-  export function from(array: ArrayBufferLike | ArrayLike<number>): Bytes {
+  export function from(array: ArrayBufferLike | ArrayLike<number>): Uint8Array {
     return new Uint8Array(array)
   }
 
   /**
-   * Alloc Bytes with typed length (using Bytes.allocUnsafe) and fill it with WebCrypto's CSPRNG
+   * Alloc Uint8Array with typed length and fill it with WebCrypto's CSPRNG
    * @param length 
-   * @returns `Bytes[number;N]`
+   * @returns `Uint8Array[number;N]`
    */
-  export function random<N extends number>(length: N): Bytes<N> {
+  export function random<N extends number>(length: N): Uint8Array<N> {
     const bytes = alloc(length)
     crypto.getRandomValues(bytes)
     return bytes
   }
 
   /**
-   * Type guard bytes of N length into Bytes<N>
+   * Type guard bytes of N length into Uint8Array<N>
    * @param bytes 
    * @param length 
    * @returns 
    */
-  export function is<N extends number>(bytes: Bytes, length: N): bytes is Bytes<N> {
+  export function is<N extends number>(bytes: Uint8Array, length: N): bytes is Uint8Array<N> {
     return bytes.length.valueOf() === length.valueOf()
   }
 
@@ -79,7 +85,7 @@ export namespace Bytes {
    * @param b 
    * @returns 
    */
-  export function equals<N extends number, M extends N>(a: Bytes<N>, b: Bytes<M>): a is Bytes<M> {
+  export function equals<N extends number, M extends N>(a: Uint8Array<N>, b: Uint8Array<M>): a is Uint8Array<M> {
     if ("indexedDB" in globalThis)
       return indexedDB.cmp(a, b) === 0
     if ("process" in globalThis)
@@ -93,36 +99,36 @@ export namespace Bytes {
    * @param b 
    * @returns 
    */
-  export function equals2<N extends M, M extends number>(a: Bytes<N>, b: Bytes<M>): b is Bytes<N> {
+  export function equals2<N extends M, M extends number>(a: Uint8Array<N>, b: Uint8Array<M>): b is Uint8Array<N> {
     return equals(b, a)
   }
 
   /**
-   * Try to cast bytes of N length into Bytes<N>
+   * Try to cast bytes of N length into Uint8Array<N>
    * @param view 
    * @param length 
    * @returns 
    */
-  export function castOrThrow<N extends number>(bytes: Bytes, length: N): Bytes<N> {
+  export function castOrThrow<N extends number>(bytes: Uint8Array, length: N): Uint8Array<N> {
     if (is(bytes, length))
       return bytes
     throw new BytesCastError(bytes.length, length)
   }
 
   /**
-   * Try to cast bytes of N length into Bytes<N>
+   * Try to cast bytes of N length into Uint8Array<N>
    * @param view 
    * @param length 
    * @returns 
    */
-  export function tryCast<N extends number>(bytes: Bytes, length: N): Result<Bytes<N>, BytesCastError> {
+  export function tryCast<N extends number>(bytes: Uint8Array, length: N): Result<Uint8Array<N>, BytesCastError> {
     if (is(bytes, length))
       return new Ok(bytes)
     return new Err(new BytesCastError(bytes.length, length))
   }
 
   /**
-   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Bytes<N>
+   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Uint8Array<N>
    * @param array 
    * @param length 
    * @returns 
@@ -132,7 +138,7 @@ export namespace Bytes {
   }
 
   /**
-   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Bytes<N>
+   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Uint8Array<N>
    * @param array 
    * @param length 
    * @returns 
@@ -142,7 +148,7 @@ export namespace Bytes {
   }
 
   /**
-   * Zero-copy conversion from ArrayBufferView of N length into Bytes<N>
+   * Zero-copy conversion from ArrayBufferView of N length into Uint8Array<N>
    * @param view 
    * @param length 
    * @returns 
@@ -152,7 +158,7 @@ export namespace Bytes {
   }
 
   /**
-   * Zero-copy conversion from ArrayBufferView of N length into Bytes<N>
+   * Zero-copy conversion from ArrayBufferView of N length into Uint8Array<N>
    * @param view 
    * @param length 
    * @returns 
@@ -162,11 +168,11 @@ export namespace Bytes {
   }
 
   /**
-   * Zero-copy conversion from ArrayBufferView into Bytes
+   * Zero-copy conversion from ArrayBufferView into Uint8Array
    * @param view 
    * @returns 
    */
-  export function fromView(view: ArrayBufferView): Bytes {
+  export function fromView(view: ArrayBufferView): Uint8Array {
     return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
   }
 
@@ -175,7 +181,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function fromUtf8(text: string): Bytes {
+  export function fromUtf8(text: string): Uint8Array {
     return Utf8.encoder.encode(text)
   }
 
@@ -184,7 +190,7 @@ export namespace Bytes {
    * @param text 
    * @returns 
    */
-  export function toUtf8(bytes: Bytes): string {
+  export function toUtf8(bytes: Uint8Array): string {
     return Utf8.decoder.decode(bytes)
   }
 
@@ -193,7 +199,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function fromAscii(text: string): Bytes {
+  export function fromAscii(text: string): Uint8Array {
     if ("process" in globalThis)
       return fromView(Buffer.from(text, "ascii"))
     return Ascii.encoder.encode(text)
@@ -204,7 +210,7 @@ export namespace Bytes {
    * @param bytes 
    * @returns 
    */
-  export function toAscii(bytes: Bytes): string {
+  export function toAscii(bytes: Uint8Array): string {
     if ("process" in globalThis)
       return Buffers.fromView(bytes).toString("ascii")
     return Ascii.decoder.decode(bytes)
@@ -218,10 +224,10 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function sliceOrPadStart<N extends number>(bytes: Bytes, length: N): Bytes<N> {
+  export function sliceOrPadStart<N extends number>(bytes: Uint8Array, length: N): Uint8Array<N> {
     if (bytes.length >= length) {
       const slice = bytes.slice(bytes.length - length, bytes.length)
-      return fromView(slice) as Bytes<N>
+      return fromView(slice) as Uint8Array<N>
     }
 
     const array = alloc(length)
@@ -237,7 +243,7 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function padStart<X extends number, N extends number>(bytes: Bytes<X>, length: N): Bytes<X> | Bytes<N> {
+  export function padStart<X extends number, N extends number>(bytes: Uint8Array<X>, length: N): Uint8Array<X> | Uint8Array<N> {
     if (bytes.length >= length)
       return bytes
 
@@ -251,7 +257,7 @@ export namespace Bytes {
    * @param list 
    * @returns 
    */
-  export function concat(list: Bytes[]) {
+  export function concat(list: Uint8Array[]) {
     if ("process" in globalThis)
       return fromView(Buffer.concat(list))
 
