@@ -1,4 +1,4 @@
-import { Err, Ok, Panic, Result } from "@hazae41/result"
+import { Err, Ok, Result } from "@hazae41/result"
 import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
@@ -17,14 +17,16 @@ export class BytesCastError<N extends number = number> extends Error {
 
 }
 
-export type Uint8Array<N extends number = number> =
-  | globalThis.Uint8Array & { readonly length: N }
+export type Uint8Array<N extends number = number> = number extends N
+  ? globalThis.Uint8Array
+  : globalThis.Uint8Array & { readonly length: N }
 
 /**
  * @deprecated
  */
-export type Bytes<N extends number = number> =
-  | globalThis.Uint8Array & { readonly length: N }
+export type Bytes<N extends number = number> = number extends N
+  ? globalThis.Uint8Array
+  : globalThis.Uint8Array & { readonly length: N }
 
 export namespace Bytes {
 
@@ -85,12 +87,12 @@ export namespace Bytes {
    * @param b 
    * @returns 
    */
-  export function equals<N extends number, M extends N>(a: Uint8Array<N>, b: Uint8Array<M>): a is Uint8Array<M> {
+  export function equals<N extends number>(a: Uint8Array, b: Uint8Array<N>): a is Uint8Array<N> {
     if ("indexedDB" in globalThis)
       return indexedDB.cmp(a, b) === 0
     if ("process" in globalThis)
       return Buffers.fromView(a).equals(Buffers.fromView(b))
-    throw Panic.from(new Error(`Can't compare bytes`))
+    throw new Error(`Could not compare bytes`)
   }
 
   /**
@@ -99,7 +101,7 @@ export namespace Bytes {
    * @param b 
    * @returns 
    */
-  export function equals2<N extends M, M extends number>(a: Uint8Array<N>, b: Uint8Array<M>): b is Uint8Array<N> {
+  export function equals2<N extends number>(a: Uint8Array<N>, b: Uint8Array): b is Uint8Array<N> {
     return equals(b, a)
   }
 
