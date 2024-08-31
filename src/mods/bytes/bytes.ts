@@ -1,4 +1,3 @@
-import { Err, Ok, Result } from "@hazae41/result"
 import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
@@ -18,13 +17,6 @@ export class BytesCastError<N extends number = number> extends Error {
 }
 
 export type Uint8Array<N extends number = number> = number extends N
-  ? globalThis.Uint8Array
-  : globalThis.Uint8Array & { readonly length: N }
-
-/**
- * @deprecated
- */
-export type Bytes<N extends number = number> = number extends N
   ? globalThis.Uint8Array
   : globalThis.Uint8Array & { readonly length: N }
 
@@ -118,18 +110,6 @@ export namespace Bytes {
   }
 
   /**
-   * Try to cast bytes of N length into Uint8Array<N>
-   * @param view 
-   * @param length 
-   * @returns 
-   */
-  export function tryCast<N extends number>(bytes: Uint8Array, length: N): Result<Uint8Array<N>, BytesCastError> {
-    if (is(bytes, length))
-      return new Ok(bytes)
-    return new Err(new BytesCastError(bytes.length, length))
-  }
-
-  /**
    * Copied conversion from ArrayBufferLike or ArrayLike<number> into Uint8Array<N>
    * @param array 
    * @param length 
@@ -140,16 +120,6 @@ export namespace Bytes {
   }
 
   /**
-   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Uint8Array<N>
-   * @param array 
-   * @param length 
-   * @returns 
-   */
-  export function tryFromAndCast<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N) {
-    return tryCast(from(array), length)
-  }
-
-  /**
    * Zero-copy conversion from ArrayBufferView of N length into Uint8Array<N>
    * @param view 
    * @param length 
@@ -157,16 +127,6 @@ export namespace Bytes {
    */
   export function fromViewAndCastOrThrow<N extends number>(view: ArrayBufferView, length: N) {
     return castOrThrow(fromView(view), length)
-  }
-
-  /**
-   * Zero-copy conversion from ArrayBufferView of N length into Uint8Array<N>
-   * @param view 
-   * @param length 
-   * @returns 
-   */
-  export function tryFromViewAndCast<N extends number>(view: ArrayBufferView, length: N) {
-    return tryCast(fromView(view), length)
   }
 
   /**
