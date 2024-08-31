@@ -21,9 +21,6 @@
     "test": "node ./dist/test/index.test.mjs",
     "prepare": "npm run build"
   },
-  "peerDependencies": {
-    "@hazae41/base16": "^1.0.18"
-  },
   "devDependencies": {
     "@hazae41/phobos": "^1.0.10",
     "@hazae41/rimraf": "^1.0.1",
