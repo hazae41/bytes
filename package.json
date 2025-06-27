@@ -64,5 +64,8 @@
     "esmodules",
     "tested",
     "unit-tested"
-  ]
+  ],
+  "dependencies": {
+    "@hazae41/arrays": "^2.0.1"
+  }
 }

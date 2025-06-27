@@ -1,20 +1,7 @@
+import { ArrayLike } from "@hazae41/arrays"
 import { Ascii } from "libs/ascii/ascii.js"
 import { Buffers } from "libs/buffers/buffers.js"
 import { Utf8 } from "libs/utf8/utf8.js"
-import { Sized } from "../sized/sized.js"
-
-export class BytesCastError<N extends number = number> extends Error {
-  readonly #class = BytesCastError
-  readonly name = this.#class.name
-
-  constructor(
-    readonly actualLength: number,
-    readonly expectedLength: N
-  ) {
-    super(`Could not cast ${actualLength} bytes into ${expectedLength}-sized bytes`)
-  }
-
-}
 
 export type Uint8Array<N extends number = number> = number extends N
   ? globalThis.Uint8Array
@@ -44,11 +31,11 @@ export namespace Bytes {
    * @param array 
    * @returns `Uint8Array[number;N]`
    */
-  export function from<N extends number>(sized: Sized<number, N>): Uint8Array<N>;
+  export function from<N extends number>(sized: ArrayLike<number, N>): Uint8Array<N>;
 
-  export function from(array: ArrayBufferLike | ArrayLike<number>): Uint8Array;
+  export function from(array: ArrayBuffer | ArrayLike<number>): Uint8Array;
 
-  export function from(array: ArrayBufferLike | ArrayLike<number>): Uint8Array {
+  export function from(array: ArrayBuffer | ArrayLike<number>): Uint8Array {
     return new Uint8Array(array)
   }
 
@@ -83,7 +70,7 @@ export namespace Bytes {
     if ("indexedDB" in globalThis)
       return indexedDB.cmp(a, b) === 0
     if ("process" in globalThis)
-      return Buffers.fromView(a).equals(Buffers.fromView(b))
+      return Buffers.fromView(a).equals(b)
     throw new Error(`Could not compare bytes`)
   }
 
@@ -103,30 +90,10 @@ export namespace Bytes {
    * @param length 
    * @returns 
    */
-  export function castOrThrow<N extends number>(bytes: Uint8Array, length: N): Uint8Array<N> {
-    if (is(bytes, length))
-      return bytes
-    throw new BytesCastError(bytes.length, length)
-  }
-
-  /**
-   * Copied conversion from ArrayBufferLike or ArrayLike<number> into Uint8Array<N>
-   * @param array 
-   * @param length 
-   * @returns 
-   */
-  export function fromAndCastOrThrow<N extends number>(array: ArrayBufferLike | ArrayLike<number>, length: N) {
-    return castOrThrow(from(array), length)
-  }
-
-  /**
-   * Zero-copy conversion from ArrayBufferView of N length into Uint8Array<N>
-   * @param view 
-   * @param length 
-   * @returns 
-   */
-  export function fromViewAndCastOrThrow<N extends number>(view: ArrayBufferView, length: N) {
-    return castOrThrow(fromView(view), length)
+  export function asOrThrow<N extends number>(bytes: Uint8Array, length: N): Uint8Array<N> {
+    if (!is(bytes, length))
+      throw new Error()
+    return bytes
   }
 
   /**
